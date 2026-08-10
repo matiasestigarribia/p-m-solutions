@@ -1,0 +1,35 @@
+# Environments & secrets
+.env
+.env.*
+.venv/
+venv/
+env/
+ENV/
+
+# Local contact-sink data (SQLite) and uploaded media
+data/
+*.sqlite3
+*.db
+
+# Byte-compiled / packaging
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+
+# Tests & coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# NOTE: _reference/ is intentionally NOT listed here — it is excluded locally
+# via .git/info/exclude so the nested reusable-source repo is never committed.

@@ -1,0 +1,27 @@
+{# Renders a single input based on its `kind`. Expects `f` (Field) and `values`. #}
+{% set val = values.get(f.name, '') %}
+{% set err = errors.get(f.name) %}
+{% if f.kind == 'textarea' %}
+  <textarea class="input-el {% if err %}input-el--error{% endif %}" id="f-{{ f.name }}"
+            name="{{ f.name }}" {% if f.required %}required{% endif %}
+            {% if f.example %}placeholder="{{ f.example }}"{% endif %}>{{ val }}</textarea>
+{% elif f.kind == 'select' %}
+  <select class="input-el {% if err %}input-el--error{% endif %}" id="f-{{ f.name }}"
+          name="{{ f.name }}" {% if f.required %}required{% endif %}>
+    <option value="">Selecione…</option>
+    {% for opt in f.options %}
+      <option value="{{ opt }}" {% if val == opt %}selected{% endif %}>{{ opt }}</option>
+    {% endfor %}
+  </select>
+{% elif f.kind == 'file' %}
+  {# Inactive in Stage 1 — object storage (Cloudflare R2) is a Stage 2 seam. #}
+  <input class="input-el" id="f-{{ f.name }}" name="{{ f.name }}" type="file" disabled
+         aria-describedby="hint-{{ f.name }}">
+  <p class="input-hint" id="hint-{{ f.name }}">Envio de anexos disponível em breve.</p>
+{% else %}
+  <input class="input-el {% if err %}input-el--error{% endif %}" id="f-{{ f.name }}"
+         name="{{ f.name }}"
+         type="{% if f.kind == 'email' %}email{% elif f.kind == 'tel' %}tel{% else %}text{% endif %}"
+         value="{{ val }}" {% if f.required %}required{% endif %}
+         {% if f.example %}placeholder="{{ f.example }}"{% endif %}>
+{% endif %}

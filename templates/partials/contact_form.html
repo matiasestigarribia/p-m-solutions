@@ -1,0 +1,73 @@
+{# Contact form partial. Re-rendered standalone on validation error (HTMX swap)
+   or as part of the full page. `errors` maps field name -> message; `values`
+   holds previously-submitted values so the user does not lose input. #}
+<form id="contact-form" class="form" method="post" action="/contato"
+      hx-post="/contato" hx-target="#contato-panel" hx-swap="innerHTML" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  {# Honeypot: real users leave this empty; bots tend to fill every field. #}
+  <div style="position:absolute;left:-9999px" aria-hidden="true">
+    <label>Não preencha este campo<input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+  </div>
+
+  {% if errors %}
+  <div class="alert alert--error" role="alert">
+    Não foi possível enviar. Verifique os campos destacados.
+    {% if errors.get('__form__') %}<div>{{ errors['__form__'] }}</div>{% endif %}
+  </div>
+  {% endif %}
+
+  <fieldset class="form__fieldset">
+    <legend class="form__legend">{{ content.CONTACT_INFO_HEADING }}</legend>
+    <div class="form__grid">
+      {% for f in contact_info_fields %}
+        {% set is_full = f.kind in ('textarea',) %}
+        <div class="form__group {% if is_full %}form__group--full{% endif %}">
+          <label class="input-label" for="f-{{ f.name }}">
+            {{ f.label }}{% if f.required %}<span class="req" aria-hidden="true">*</span>{% endif %}
+          </label>
+          {% include 'partials/_field.html' %}
+          {% if errors.get(f.name) %}
+            <p class="input-hint input-hint--error">{{ errors[f.name] }}</p>
+          {% elif f.help %}
+            <p class="input-hint">{{ f.help }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </fieldset>
+
+  <fieldset class="form__fieldset">
+    <legend class="form__legend">{{ content.PROJECT_HEADING }}</legend>
+    <div class="form__grid">
+      {% for f in project_fields %}
+        {% set is_full = f.kind in ('textarea',) or f.name in ('solution',) %}
+        <div class="form__group {% if is_full %}form__group--full{% endif %}">
+          <label class="input-label" for="f-{{ f.name }}">
+            {{ f.label }}{% if f.required %}<span class="req" aria-hidden="true">*</span>{% endif %}
+          </label>
+          {% include 'partials/_field.html' %}
+          {% if errors.get(f.name) %}
+            <p class="input-hint input-hint--error">{{ errors[f.name] }}</p>
+          {% elif f.help %}
+            <p class="input-hint">{{ f.help }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </fieldset>
+
+  <div class="form__group">
+    <label class="form__consent">
+      <input type="checkbox" name="consent" value="on"
+             {% if values.get('consent') %}checked{% endif %} required>
+      <span>{{ content.CONSENT_LABEL }}</span>
+    </label>
+    {% if errors.get('consent') %}
+      <p class="input-hint input-hint--error">{{ errors['consent'] }}</p>
+    {% endif %}
+  </div>
+
+  <div class="form__actions">
+    <button type="submit" class="btn-primary">{{ content.SUBMIT_LABEL }}</button>
+  </div>
+</form>
