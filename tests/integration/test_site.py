@@ -1,5 +1,6 @@
 """End-to-end HTTP tests for the Stage 1 content site + contact form."""
 import re
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -88,6 +89,13 @@ def test_public_pages_share_one_grid_layer(client, path):
     r = client.get(path)
     assert r.status_code == 200
     assert 'class="site-grid"' in r.text
+    assert 'class="nav__brand-crop"' in r.text
+
+
+def test_shared_grid_is_intentionally_visible():
+    css = Path("static/css/pm.css").read_text(encoding="utf-8")
+    assert "--grid-ambient:      rgba(255,255,255,.09);" in css
+    assert ".section--alt { background: rgba(6,6,6,.5); }" in css
 
 
 def test_contact_form_lists_all_solution_options(client):

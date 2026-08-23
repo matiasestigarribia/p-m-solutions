@@ -24,9 +24,11 @@
     <div class="nav__inner">
       <a class="nav__brand" href="/" aria-label="P & M Solutions"
          hx-get="/" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
-        <img class="nav__brand-logo"
-             src="{{ url_for('static', path='brand/pm-solutions-logo-dark.png') }}"
-             alt="P & M Solutions">
+        <span class="nav__brand-crop">
+          <img class="nav__brand-logo"
+               src="{{ url_for('static', path='brand/pm-solutions-logo-dark.png') }}"
+               alt="P & M Solutions">
+        </span>
       </a>
       <button class="nav__toggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav-links" data-nav-toggle>&#9776;</button>
       <ul class="nav__links" id="nav-links">

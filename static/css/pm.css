@@ -43,7 +43,7 @@
      Ambient is the calm grid felt while scrolling; line is the stronger
      grid drawn in each page's top band; mask fades it downward. */
   --grid-size:         56px;
-  --grid-ambient:      rgba(255,255,255,.028);
+  --grid-ambient:      rgba(255,255,255,.09);
 
 
   --radius-btn: 12px; --radius-card: 16px; --radius-panel: 12px;
@@ -118,7 +118,7 @@ p { margin: 0 0 1rem; }
 /* Layout ------------------------------------------------------------------ */
 .container { max-width: var(--container-max); margin: 0 auto; padding: 0 var(--container-gutter); }
 .section { position: relative; padding: var(--section-padding-y) 0; }
-.section--alt { background: var(--bg-section-alt); }
+.section--alt { background: rgba(6,6,6,.5); }
 
 /* Shared grid layer is rendered once in the base layout for every route. */
 .section--head, .section--head-quiet { background: transparent; }
@@ -147,17 +147,26 @@ p { margin: 0 0 1rem; }
 .nav__brand {
   display: inline-flex;
   align-items: center;
-  width: 180px;
+  width: 120px;
   height: 100%;
   overflow: hidden;
 }
-.nav__brand-logo {
+.nav__brand-crop {
+  position: relative;
   display: block;
-  width: 180px;
-  height: 42px;
+  width: 120px;
+  height: 32px;
+  overflow: hidden;
+}
+.nav__brand-logo {
+  position: absolute;
+  left: -27px;
+  top: -29px;
+  display: block;
+  width: 174px;
+  height: 87px;
   max-width: none;
-  object-fit: cover;
-  object-position: center;
+  object-fit: fill;
 }
 .nav__links { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
 .nav__links a { color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 500; transition: var(--transition-base); }
