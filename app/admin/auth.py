@@ -21,9 +21,19 @@ class AdminAuth(AuthenticationBackend):
             https_only=settings.environment == "production",
             same_site="lax",
         )
-        self._login_limiter = RateLimiter(
+        self._ip_login_limiter = RateLimiter(
             limit=settings.admin_login_rate_limit,
             window_seconds=settings.admin_login_window_seconds,
+        )
+        self._credential_login_limiter = RateLimiter(
+            limit=settings.admin_login_rate_limit,
+            window_seconds=settings.admin_login_window_seconds,
+        )
+
+    def _login_allowed(self, client_ip: str, email: str) -> bool:
+        """Apply both an IP-wide and an IP/email credential limit."""
+        return self._ip_login_limiter.allow(client_ip) and self._credential_login_limiter.allow(
+            f"{client_ip}:{email}"
         )
 
     async def login(self, request: Request) -> bool:
@@ -35,7 +45,7 @@ class AdminAuth(AuthenticationBackend):
             return False
         email = str(email).strip().lower()
         client_ip = request.client.host if request.client else "unknown"
-        if not self._login_limiter.allow(f"{client_ip}:{email}"):
+        if not self._login_allowed(client_ip, email):
             return False
 
         from app.core.database import get_session

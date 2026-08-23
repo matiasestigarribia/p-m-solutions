@@ -106,6 +106,13 @@ class Settings(BaseSettings):
                 "PM_R2_PRIVATE_BUCKET_NAME, PM_R2_PUBLIC_URL) are "
                 "required when PM_ENABLE_OBJECT_STORAGE=true."
             )
+        if (
+            self.enable_object_storage
+            and self.r2_bucket_name == self.r2_private_bucket_name
+        ):
+            raise ValueError(
+                "PM_R2_BUCKET_NAME and PM_R2_PRIVATE_BUCKET_NAME must be different."
+            )
         return self
 
 

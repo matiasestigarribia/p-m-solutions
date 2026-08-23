@@ -57,3 +57,12 @@ def test_rate_limiter_window_resets():
     assert rl.allow("k") is False
     time.sleep(0.06)
     assert rl.allow("k") is True
+
+
+def test_admin_login_limiter_is_ip_wide():
+    from app.admin.auth import AdminAuth
+
+    auth = AdminAuth("test-secret")
+    for index in range(5):
+        assert auth._login_allowed("1.2.3.4", f"user-{index}@example.com") is True
+    assert auth._login_allowed("1.2.3.4", "rotated@example.com") is False
