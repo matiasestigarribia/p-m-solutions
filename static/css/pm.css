@@ -44,9 +44,7 @@
      grid drawn in each page's top band; mask fades it downward. */
   --grid-size:         56px;
   --grid-ambient:      rgba(255,255,255,.028);
-  --grid-line:         rgba(255,255,255,.05);
-  --grid-line-quiet:   rgba(255,255,255,.03);
-  --grid-mask:         radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+
 
   --radius-btn: 12px; --radius-card: 16px; --radius-panel: 12px;
   --radius-input: 10px; --radius-pill: 999px;
@@ -62,18 +60,29 @@
 html { scroll-behavior: smooth; background: var(--color-bg); }
 
 body {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
   margin: 0;
   font-family: var(--font-body);
   font-size: var(--fs-body);
   line-height: var(--lh-body);
   color: var(--color-body);
-  background-color: var(--color-bg);
+  background: var(--color-bg);
+  padding-top: var(--ds-nav-h);
+  -webkit-font-smoothing: antialiased;
+}
+
+body > *:not(.site-grid) { position: relative; z-index: 1; }
+.site-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
   background-image:
     linear-gradient(var(--grid-ambient) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-ambient) 1px, transparent 1px);
   background-size: var(--grid-size) var(--grid-size);
-  padding-top: var(--ds-nav-h);
-  -webkit-font-smoothing: antialiased;
 }
 
 ::selection { background: rgba(14,165,233,0.3); }
@@ -111,20 +120,8 @@ p { margin: 0 0 1rem; }
 .section { position: relative; padding: var(--section-padding-y) 0; }
 .section--alt { background: var(--bg-section-alt); }
 
-/* Shared page-head grid band — every route opens on the same grammar.
-   Drawn behind content via ::before; container sits above it. */
-.section--head::before,
-.section--head-quiet::before {
-  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: var(--grid-size) var(--grid-size);
-  -webkit-mask-image: var(--grid-mask); mask-image: var(--grid-mask);
-}
-.section--head-quiet::before { --grid-line: var(--grid-line-quiet); }
-.section--head > .container,
-.section--head-quiet > .container { position: relative; z-index: 1; }
+/* Shared grid layer is rendered once in the base layout for every route. */
+.section--head, .section--head-quiet { background: transparent; }
 .section__eyebrow {
   font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em;
   text-transform: uppercase; color: var(--color-accent-300); margin-bottom: 14px;
@@ -147,8 +144,21 @@ p { margin: 0 0 1rem; }
   padding: 0 var(--container-gutter);
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
-.nav__brand { display: inline-flex; align-items: center; height: 100%; }
-.nav__brand-logo { display: block; height: 30px; width: auto; object-fit: contain; object-position: left center; }
+.nav__brand {
+  display: inline-flex;
+  align-items: center;
+  width: 180px;
+  height: 100%;
+  overflow: hidden;
+}
+.nav__brand-logo {
+  display: block;
+  width: 180px;
+  height: 42px;
+  max-width: none;
+  object-fit: cover;
+  object-position: center;
+}
 .nav__links { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
 .nav__links a { color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 500; transition: var(--transition-base); }
 .nav__links a:hover { color: #fff; }
@@ -171,14 +181,6 @@ p { margin: 0 0 1rem; }
 
 /* Hero -------------------------------------------------------------------- */
 .hero { position: relative; overflow: hidden; padding: 96px 0 72px; }
-.hero__grid {
-  position: absolute; inset: 0; z-index: 0;
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: var(--grid-size) var(--grid-size);
-  -webkit-mask-image: var(--grid-mask); mask-image: var(--grid-mask);
-}
 .hero__inner { position: relative; z-index: 2; max-width: 780px; }
 .hero__badge {
   display: inline-flex; align-items: center; gap: 8px;
@@ -219,6 +221,8 @@ p { margin: 0 0 1rem; }
   border: 1px dashed var(--color-border); border-radius: var(--radius-card);
   padding: 40px; text-align: center; color: var(--color-muted);
   background: var(--glass-panel);
+  max-width: 780px;
+  margin-top: 32px;
 }
 
 /* Badges ------------------------------------------------------------------ */
