@@ -1,7 +1,7 @@
 <!-- Home fragment -->
 <section class="hero hero--home" id="home">
-  <div class="container">
-    <div class="hero__inner">
+  <div class="container hero__layout">
+    <div class="hero__inner hero__copy">
       <span class="hero__badge"><span class="tag">P &amp; M</span> Tecnologia para empresas</span>
       <p class="hero__signal">PROBLEMA → PROCESSO → SOLUÇÃO</p>
       <h1 class="hero__title">Sistemas, soluções digitais e automações sob medida</h1>
@@ -9,6 +9,32 @@
       <div class="hero__actions">
         <a class="btn-primary" href="/contato" hx-get="/contato" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Entre em contato</a>
         <a class="btn-glass" href="/quem-somos" hx-get="/quem-somos" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Conheça a empresa</a>
+      </div>
+      <p class="hero__promise">Você traz o desafio. A gente transforma complexidade em solução.</p>
+    </div>
+
+    <div class="hero__visual" aria-label="Fluxo de projeto da P e M Solutions">
+      <div class="hero__visual-glow" aria-hidden="true"></div>
+      <div class="project-console">
+        <div class="project-console__bar">
+          <span class="console-dot console-dot--r" aria-hidden="true"></span>
+          <span class="console-dot console-dot--y" aria-hidden="true"></span>
+          <span class="console-dot console-dot--g" aria-hidden="true"></span>
+          <span class="project-console__file">projeto.ts</span>
+          <span class="project-console__status"><span class="status-dot" aria-hidden="true"></span>Pronto para conversar</span>
+        </div>
+        <div class="project-console__body">
+          <div class="project-console__lines" aria-hidden="true">1<br>2<br>3<br>4<br>5<br>6</div>
+          <pre class="project-console__code"><code><span class="code-comment">// do desafio ao próximo passo</span>
+<span class="code-keyword">import</span> <span class="code-variable">Projeto</span> <span class="code-keyword">from</span> <span class="code-string">Cliente</span>;
+
+<span class="code-keyword">const</span> desafio = <span class="code-function">ouvir</span>(cliente);
+<span class="code-keyword">const</span> solução = <span class="code-function">simplificar</span>(desafio);
+<span class="code-keyword">return</span> <span class="code-function">crescer</span>(comClareza, solução);</code></pre>
+        </div>
+      </div>
+      <div class="hero__proof" aria-label="Como trabalhamos">
+        <span>Ouvir</span><span>Entender</span><span>Construir</span>
       </div>
     </div>
   </div>

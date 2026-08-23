@@ -292,11 +292,15 @@ def test_brand_lockup_rendered_on_all_routes(client, path):
 # --- Home-hero depth fields + signal line ---------------------------------
 
 def test_home_hero_signal_line_present(client):
-    """Home hero must render the Portuguese signal line between badge and h1."""
+    """Home hero renders the mission-led signal and project story."""
     r = client.get("/")
     assert r.status_code == 200
     assert "PROBLEMA → PROCESSO → SOLUÇÃO" in r.text
     assert 'class="hero__signal"' in r.text
+    assert "Você traz o desafio. A gente transforma complexidade em solução." in r.text
+    assert 'class="project-console"' in r.text
+    assert "import</span> <span class=\"code-variable\">Projeto" in r.text
+    assert "simplificar" in r.text
 
 
 def test_hero_signal_not_on_inner_pages(client):
