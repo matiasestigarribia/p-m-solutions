@@ -43,7 +43,7 @@
      Ambient is the calm grid felt while scrolling; line is the stronger
      grid drawn in each page's top band; mask fades it downward. */
   --grid-size:         56px;
-  --grid-ambient:      rgba(255,255,255,.09);
+  --grid-ambient:      rgba(255,255,255,.18);
 
 
   --radius-btn: 12px; --radius-card: 16px; --radius-panel: 12px;
@@ -157,16 +157,16 @@ p { margin: 0 0 1rem; }
   width: 120px;
   height: 32px;
   overflow: hidden;
+  background-image: url("../brand/pm-solutions-logo-dark.png");
+  background-repeat: no-repeat;
+  background-size: 174px 87px;
+  background-position: -27px -29px;
 }
 .nav__brand-logo {
-  position: absolute;
-  left: -27px;
-  top: -29px;
   display: block;
-  width: 174px;
-  height: 87px;
-  max-width: none;
-  object-fit: fill;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
 }
 .nav__links { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
 .nav__links a { color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 500; transition: var(--transition-base); }

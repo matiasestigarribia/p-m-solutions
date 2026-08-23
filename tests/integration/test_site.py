@@ -94,8 +94,10 @@ def test_public_pages_share_one_grid_layer(client, path):
 
 def test_shared_grid_is_intentionally_visible():
     css = Path("static/css/pm.css").read_text(encoding="utf-8")
-    assert "--grid-ambient:      rgba(255,255,255,.09);" in css
+    assert "--grid-ambient:      rgba(255,255,255,.18);" in css
     assert ".section--alt { background: rgba(6,6,6,.5); }" in css
+    assert 'background-size: 174px 87px;' in css
+    assert 'background-position: -27px -29px;' in css
 
 
 def test_contact_form_lists_all_solution_options(client):
