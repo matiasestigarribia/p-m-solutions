@@ -261,39 +261,32 @@ def test_no_stale_grid_ambient_token():
     )
 
 
-def test_navbar_uses_semantic_brand_lockup():
-    """Navbar logo must use the DS semantic brand lockup (brand-mark + brand-name),
-    not the PNG crop workaround. The visible left edge of the brand aligns
-    with the 1200px/24px container rail without any pixel-crop offsets."""
-    assert 'class="brand-mark"' in _BASE, "brand-mark element missing from base.html"
-    assert 'class="brand-name"' in _BASE, "brand-name element missing from base.html"
-    # Ensure there is visible SVG content inside the mark (not an empty span)
-    assert "<svg" in _BASE, "brand-mark must contain an inline SVG mark"
+def test_navbar_uses_actual_brand_asset():
+    """Navbar must render the approved P&M logo asset, not a substitute icon.
+    The crop box itself begins on the shared 1200px/24px rail."""
+    assert 'class="nav__brand-crop"' in _BASE, "logo crop box missing from base.html"
+    assert 'class="nav__brand-logo"' in _BASE, "logo image missing from base.html"
+    assert 'brand/pm-solutions-logo-dark.png' in _BASE, "approved logo asset missing"
 
 
-def test_no_png_crop_offsets_in_css():
-    """The hard-coded PNG crop workaround (object-position / background-position
-    offsets) must not exist in pm.css."""
-    assert "nav__brand-logo" not in _CSS, (
-        "nav__brand-logo class must be removed — it was part of the PNG crop workaround."
-    )
-    assert "object-fit" not in _CSS, (
-        "object-fit must not appear — PNG cropping workaround has been replaced by "
-        "the semantic brand lockup."
-    )
-    assert "object-position" not in _CSS, (
-        "object-position must not appear — PNG cropping workaround replaced."
-    )
+def test_logo_crop_is_deterministic_and_rail_aligned():
+    """The source asset's visible artwork is aligned by fixed canvas geometry,
+    not browser-dependent object fitting or an arbitrary route offset."""
+    assert "width: 120px" in _CSS and "height: 32px" in _CSS
+    assert "width: 174px" in _CSS and "height: 87px" in _CSS
+    assert "left: -27px" in _CSS and "top: -29px" in _CSS
+    assert "object-fit" not in _CSS
+    assert "object-position" not in _CSS
 
 
 @pytest.mark.parametrize("path", ["/", "/quem-somos", "/produtos", "/contato"])
 def test_brand_lockup_rendered_on_all_routes(client, path):
-    """Every public route must render the semantic brand lockup in the navbar."""
+    """Every public route must render the approved logo asset in the navbar."""
     r = client.get(path)
     assert r.status_code == 200
-    assert 'class="brand-mark"' in r.text
-    assert 'class="brand-name"' in r.text
-    assert "<svg" in r.text
+    assert 'class="nav__brand-crop"' in r.text
+    assert 'class="nav__brand-logo"' in r.text
+    assert "brand/pm-solutions-logo-dark.png" in r.text
 
 
 # --- Home-hero depth fields + signal line ---------------------------------
