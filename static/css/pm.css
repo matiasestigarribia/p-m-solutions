@@ -229,17 +229,6 @@ p { margin: 0 0 1rem; }
   text-transform: uppercase; color: var(--color-accent-300);
   margin: 0 0 18px; opacity: 0.85;
 }
-.hero__badge {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: var(--glass-panel); border: 1px solid var(--color-border);
-  backdrop-filter: blur(12px); border-radius: var(--radius-pill);
-  padding: 6px 14px; margin-bottom: 26px; font-size: 12px; color: rgba(255,255,255,0.7);
-}
-.hero__badge .tag {
-  font-size: 10px; font-weight: 600; letter-spacing: .04em;
-  background: rgba(14,165,233,0.2); color: var(--color-accent-300);
-  padding: 2px 8px; border-radius: var(--radius-pill);
-}
 .hero__title { margin-bottom: 22px; }
 .hero__subtitle { font-size: 18px; color: rgba(255,255,255,0.6); max-width: 640px; margin-bottom: 32px; }
 .hero__actions { display: flex; gap: 14px; flex-wrap: wrap; }

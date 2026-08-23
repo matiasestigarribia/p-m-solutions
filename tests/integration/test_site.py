@@ -297,6 +297,8 @@ def test_home_hero_signal_line_present(client):
     assert r.status_code == 200
     assert "PROBLEMA → PROCESSO → SOLUÇÃO" in r.text
     assert 'class="hero__signal"' in r.text
+    assert 'class="hero__badge"' not in r.text
+    assert "Tecnologia para empresas" not in r.text
     assert "Você traz o desafio. A gente transforma complexidade em solução." in r.text
     assert 'class="project-console"' in r.text
     assert "import</span> <span class=\"code-variable\">Projeto" in r.text
