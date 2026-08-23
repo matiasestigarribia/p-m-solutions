@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700&family=Geist+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link href="{{ url_for('static', path='css/pm.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', path='css/pm.css') }}?v=20260823-visual-3" rel="stylesheet">
 
   <!-- HTMX: fragment navigation. Every nav link falls back to a normal href
        when JavaScript is unavailable, so the site works without it. -->
@@ -21,7 +21,7 @@
   <a class="skip-link" href="#content">Pular para o conteúdo</a>
 
   <nav class="nav">
-    <div class="nav__inner">
+    <div class="nav__inner container">
       <a class="nav__brand" href="/" aria-label="P & M Solutions"
          hx-get="/" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
         <span class="nav__brand-crop">
