@@ -83,6 +83,13 @@ def test_products_section_is_empty_state_not_invented(client):
     assert "Conteúdo em preparação" in r.text
 
 
+@pytest.mark.parametrize("path", ["/", "/quem-somos", "/produtos", "/contato"])
+def test_public_pages_share_one_grid_layer(client, path):
+    r = client.get(path)
+    assert r.status_code == 200
+    assert 'class="site-grid"' in r.text
+
+
 def test_contact_form_lists_all_solution_options(client):
     r = client.get("/contato")
     for opt in ("Desenvolvimento de sistema web", "Consultoria em tecnologia",
@@ -187,11 +194,11 @@ def test_visual_section_alt_hook_is_rendered(client, path, expected_class):
     assert expected_class in r.text
 
 
-def test_hero_grid_hook_is_rendered_on_home(client):
-    """hero__grid div is the stronger per-section overlay above the body grid."""
+def test_shared_grid_hook_is_rendered_on_home(client):
+    """The home page uses the same shared grid layer as every public route."""
     r = client.get("/")
     assert r.status_code == 200
-    assert 'class="hero__grid"' in r.text
+    assert 'class="site-grid"' in r.text
 
 
 def test_body_grid_not_blocked_on_products_page(client):
