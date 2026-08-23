@@ -314,37 +314,40 @@ def test_hero_signal_not_on_inner_pages(client):
 
 def test_hero_cyan_depth_field_in_css():
     """hero--home::before must define the cyan radial depth field (DS rgba(14,165,233,0.18))."""
-    assert ".hero--home::before" in _CSS, ".hero--home::before rule missing from pm.css"
+    assert ".site-glow--cyan" in _CSS, "shared cyan glow selector missing"
+    assert ".site-glow--indigo" in _CSS, "shared indigo glow selector missing"
     assert "rgba(14,165,233,0.18)" in _CSS, \
-        "Cyan depth field rgba(14,165,233,0.18) not found in .hero--home::before rule"
-    # Verify pointer-events and z-index appear in the before block
-    before_block = _CSS[_CSS.index(".hero--home::before"):]
-    before_block = before_block[:before_block.index("}")]
-    assert "pointer-events: none" in before_block, \
-        ".hero--home::before must have pointer-events: none"
-    assert "z-index: 1" in before_block, \
-        ".hero--home::before must use z-index: 1 (behind .hero__inner at z-index 2)"
+        "Cyan depth field rgba(14,165,233,0.18) not found in shared glow"
+    assert "rgba(129,140,248,0.14)" in _CSS, \
+        "Indigo depth field rgba(129,140,248,0.14) not found in shared glow"
+    assert 'class="site-glow site-glow--cyan"' in _BASE
+    assert 'class="site-glow site-glow--indigo"' in _BASE
 
 
 def test_hero_indigo_depth_field_in_css():
     """hero--home::after must define the indigo radial depth field (DS rgba(129,140,248,0.14))."""
-    assert ".hero--home::after" in _CSS, ".hero--home::after rule missing from pm.css"
+    assert ".site-glow--indigo" in _CSS, "shared indigo glow selector missing"
     assert "rgba(129,140,248,0.14)" in _CSS, \
-        "Indigo depth field rgba(129,140,248,0.14) not found in .hero--home::after rule"
-    after_block = _CSS[_CSS.index(".hero--home::after"):]
-    after_block = after_block[:after_block.index("}")]
-    assert "pointer-events: none" in after_block, \
-        ".hero--home::after must have pointer-events: none"
-    assert "z-index: 1" in after_block, \
-        ".hero--home::after must use z-index: 1 (behind .hero__inner at z-index 2)"
+        "Indigo depth field rgba(129,140,248,0.14) not found in shared glow"
+    assert 'class="site-glow site-glow--cyan"' in _BASE
+    assert 'class="site-glow site-glow--indigo"' in _BASE
+
+
+@pytest.mark.parametrize("path", ["/", "/quem-somos", "/produtos", "/contato"])
+def test_shared_glows_render_on_all_routes(client, path):
+    """The shared site face must include both depth fields on every route."""
+    r = client.get(path)
+    assert r.status_code == 200
+    assert 'class="site-glow site-glow--cyan"' in r.text
+    assert 'class="site-glow site-glow--indigo"' in r.text
 
 
 def test_hero_inner_sits_above_depth_fields():
-    """.hero__inner z-index must be higher than the depth field pseudo-elements."""
+    """.hero__inner z-index must be higher than the shared depth fields."""
     inner_match = re.search(r"\.hero__inner\s*\{[^}]+z-index:\s*(\d+)", _CSS)
     assert inner_match, ".hero__inner z-index declaration not found in pm.css"
     assert int(inner_match.group(1)) >= 2, \
-        ".hero__inner z-index must be ≥ 2 to sit above depth fields at z-index 1"
+        ".hero__inner z-index must be ≥ 2 to sit above shared depth fields"
 
 
 def test_grid_alpha_and_mask_unaffected_by_depth_fields():
