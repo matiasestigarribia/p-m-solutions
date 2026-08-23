@@ -25,7 +25,7 @@
   --color-border:        rgba(255,255,255,0.08);
   --color-border-soft:   rgba(255,255,255,0.05);
 
-  --bg-section-alt:      #060606;
+  --bg-section-alt:      rgba(6,6,6,0.88);
 
   --font-heading:        'Geist', system-ui, sans-serif;
   --font-body:           'Geist', system-ui, sans-serif;
@@ -50,7 +50,7 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; background: var(--color-bg); }
 
 body {
   margin: 0;
@@ -58,7 +58,11 @@ body {
   font-size: var(--fs-body);
   line-height: var(--lh-body);
   color: var(--color-body);
-  background: var(--color-bg);
+  background-color: var(--color-bg);
+  background-image:
+    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+  background-size: 56px 56px;
   padding-top: var(--ds-nav-h);
   -webkit-font-smoothing: antialiased;
 }
