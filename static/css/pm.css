@@ -204,9 +204,13 @@ p { margin: 0 0 1rem; }
 .btn-white:hover { background: rgba(255,255,255,0.9); }
 
 /* Hero -------------------------------------------------------------------- */
-.hero { position: relative; overflow: hidden; padding: 96px 0 72px; }
-/* Depth fields: cyan upper-right + indigo lower-left, behind .hero__inner (z 2).
-   Applied only to .hero, which lives exclusively in the home fragment. */
+.hero { position: relative; overflow: hidden; min-height: 620px; padding: 80px 0 72px; }
+.hero__layout {
+  position: relative; z-index: 2;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 56px; align-items: center;
+}
+/* Depth fields: cyan upper-right + indigo lower-left, behind the hero layout. */
 .hero--home::before {
   content: ''; position: absolute; top: -80px; right: 8%;
   width: 460px; height: 460px;
@@ -219,7 +223,7 @@ p { margin: 0 0 1rem; }
   background: radial-gradient(circle, rgba(129,140,248,0.14) 0%, transparent 70%);
   border-radius: 50%; pointer-events: none; z-index: 1;
 }
-.hero__inner { position: relative; z-index: 2; max-width: 780px; }
+.hero__inner { position: relative; z-index: 2; max-width: 640px; }
 .hero__signal {
   font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em;
   text-transform: uppercase; color: var(--color-accent-300);
@@ -239,6 +243,47 @@ p { margin: 0 0 1rem; }
 .hero__title { margin-bottom: 22px; }
 .hero__subtitle { font-size: 18px; color: rgba(255,255,255,0.6); max-width: 640px; margin-bottom: 32px; }
 .hero__actions { display: flex; gap: 14px; flex-wrap: wrap; }
+.hero__promise {
+  max-width: 540px; margin: 28px 0 0; padding-left: 16px;
+  border-left: 2px solid var(--color-accent);
+  color: rgba(255,255,255,0.78); font-size: 15px; line-height: 1.6;
+}
+.hero__visual { position: relative; min-width: 0; }
+.hero__visual-glow {
+  position: absolute; inset: -18px;
+  background: linear-gradient(120deg, rgba(14,165,233,.12), rgba(129,140,248,.12));
+  filter: blur(40px); border-radius: 28px;
+}
+.project-console {
+  position: relative; overflow: hidden;
+  background: var(--glass-panel); backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border); border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-2xl);
+}
+.project-console__bar {
+  display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px;
+  border-bottom: 1px solid var(--color-border-soft); background: rgba(0,0,0,0.4);
+}
+.console-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.console-dot--r { background: #ff5f56; }
+.console-dot--y { background: #ffbd2e; }
+.console-dot--g { background: #27c93f; }
+.project-console__file { margin-left: 8px; font-family: var(--font-mono); font-size: 12px; color: rgba(255,255,255,0.4); }
+.project-console__status { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--color-success); white-space: nowrap; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-success); }
+.project-console__body { display: grid; grid-template-columns: auto 1fr; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; }
+.project-console__lines { padding: 16px 12px; text-align: right; color: rgba(255,255,255,0.2); border-right: 1px solid var(--color-border-soft); user-select: none; }
+.project-console__code { min-width: 0; margin: 0; padding: 16px; overflow-x: auto; white-space: pre; color: rgba(255,255,255,0.78); }
+.code-comment { color: #52525b; }
+.code-keyword { color: #c084fc; }
+.code-variable, .code-function { color: var(--color-accent-400); }
+.code-string { color: var(--color-accent-300); }
+.hero__proof { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.hero__proof span {
+  padding: 5px 10px; border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-pill); color: var(--color-muted);
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+}
 
 /* Cards ------------------------------------------------------------------- */
 .glass-panel {
@@ -327,6 +372,8 @@ select.input-el {
 @media (max-width: 860px) {
   :root { --fs-h1: 44px; --fs-h2: 34px; --section-padding-y: 72px; }
   .grid-3, .grid-2, .form__grid { grid-template-columns: 1fr; }
+  .hero__layout { grid-template-columns: 1fr; gap: 40px; }
+  .hero__visual { max-width: 780px; }
   .nav__links {
     display: none; position: absolute; top: var(--ds-nav-h); left: 0; right: 0;
     flex-direction: column; gap: 0; background: #000;
