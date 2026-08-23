@@ -169,3 +169,35 @@ def test_contact_honeypot_silently_drops(client):
     assert r.status_code == 200
     from app.services.contact_sink import SqliteSink
     assert SqliteSink(settings.contact_db_path).count() == 0
+
+
+# --- Visual-consistency hooks ---------------------------------------------
+# These tests pin the CSS class hooks that carry the shared grid treatment.
+# If someone accidentally drops the section--alt class from a template, the
+# body-level grid texture will stop showing through those sections without
+# any runtime error — these tests catch that silent regression.
+
+@pytest.mark.parametrize("path,expected_class", [
+    ("/quem-somos", "section--alt"),
+    ("/contato",    "section--alt"),
+])
+def test_visual_section_alt_hook_is_rendered(client, path, expected_class):
+    r = client.get(path)
+    assert r.status_code == 200
+    assert expected_class in r.text
+
+
+def test_hero_grid_hook_is_rendered_on_home(client):
+    """hero__grid div is the stronger per-section overlay above the body grid."""
+    r = client.get("/")
+    assert r.status_code == 200
+    assert 'class="hero__grid"' in r.text
+
+
+def test_body_grid_not_blocked_on_products_page(client):
+    """Products page uses plain .section (no section--alt), letting the body
+    grid show through at full opacity — verify no opaque background class."""
+    r = client.get("/produtos")
+    assert r.status_code == 200
+    assert 'id="produtos"' in r.text
+    assert "section--alt" not in r.text
