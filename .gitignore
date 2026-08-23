@@ -1,6 +1,7 @@
 # Environments & secrets
 .env
 .env.*
+!.env.example
 .venv/
 venv/
 env/
@@ -10,6 +11,10 @@ ENV/
 data/
 *.sqlite3
 *.db
+
+# One-shot local bootstrap scripts; never commit credentials tooling
+scripts/create_admin.py
+scripts/seed_cms.py
 
 # Byte-compiled / packaging
 __pycache__/

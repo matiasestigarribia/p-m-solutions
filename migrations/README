@@ -1,0 +1,10 @@
+P&M Solutions — Alembic migration scripts.
+
+Run against Neon PostgreSQL:
+    PM_DATABASE_URL=postgresql+asyncpg://... .venv/bin/alembic upgrade head
+
+Generate a new revision after model changes:
+    PM_DATABASE_URL=... .venv/bin/alembic revision --autogenerate -m "description"
+
+Rollback one revision:
+    PM_DATABASE_URL=... .venv/bin/alembic downgrade -1

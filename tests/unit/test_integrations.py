@@ -30,8 +30,12 @@ def test_getting_a_disabled_seam_raises_feature_disabled():
 
 
 def test_importing_app_does_not_load_deferred_heavy_deps():
-    # Importing the whole app must not drag in Stage 2/3 runtime libraries.
+    # asyncpg (DB driver), boto3 (R2), and langchain (chatbot) must not be
+    # loaded at startup — they are gated behind their enable_* flags.
+    # sqlalchemy is a required MVP dep and may be present in sys.modules.
     import app.main  # noqa: F401
 
-    for heavy in ("asyncpg", "boto3", "langchain", "pgvector", "sqlalchemy"):
-        assert heavy not in sys.modules, f"{heavy} must not be imported at Stage 1 startup"
+    for heavy in ("asyncpg", "boto3", "langchain", "pgvector"):
+        assert heavy not in sys.modules, (
+            f"{heavy} must not be imported when its integration flag is disabled"
+        )

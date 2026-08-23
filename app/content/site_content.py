@@ -180,8 +180,7 @@ BEST_TIME_OPTIONS = (
     "Qualquer horário",
 )
 
-# Attachment formats (verbatim) — the field itself is inactive in Stage 1
-# because object storage (Cloudflare R2) is a Stage 2 integration.
+# Attachment formats (verbatim)
 ATTACHMENT_FORMATS = "Formatos sugeridos: PDF, DOCX, XLSX, CSV, PNG, JPG e ZIP."
 
 CONTACT_FIELDS: tuple[Field, ...] = (
@@ -213,7 +212,7 @@ CONTACT_FIELDS: tuple[Field, ...] = (
     Field("deadline", "Existe um prazo esperado?",
           example="Exemplo: Gostaria de iniciar em até 30 dias.",
           help="Campo para o cliente informar uma data ou período estimado."),
-    Field("attachment", "Anexar arquivo", kind="file", enabled=False,
+    Field("attachment", "Anexar arquivo", kind="file", enabled=True,
           help="Campo opcional para o envio de documentos, planilhas, imagens, "
                "fluxos, apresentações ou materiais relacionados ao projeto. "
                + ATTACHMENT_FORMATS),
@@ -223,8 +222,8 @@ CONTACT_FIELDS: tuple[Field, ...] = (
           options=BEST_TIME_OPTIONS),
 )
 
-# The attachment field is inactive until Stage 2 (Cloudflare R2). Kept visible
-# so the form matches the approved layout, but not processed server-side.
+# Attachment uploads are processed server-side via Cloudflare R2 when
+# enable_object_storage=True; silently ignored in dev when R2 is disabled.
 CONTACT_FIELD_MAP = {f.name: f for f in CONTACT_FIELDS}
 
 # Grouping matches the approved layout: "Informações de Contato" then

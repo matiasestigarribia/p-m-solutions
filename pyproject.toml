@@ -1,13 +1,11 @@
 [project]
 name = "p-m-solutions"
-version = "0.1.0"
-description = "P & M Solutions — public content site and contact form (Stage 1)."
+version = "0.2.0"
+description = "P & M Solutions — MVP public content site with Neon DB, R2 storage, and admin panel."
 requires-python = ">=3.11"
 
-# Stage 1 runtime: content site + contact form only. No Neon, no Cloudflare R2,
-# no chatbot/LLM. The base install must stay light enough to boot with an empty
-# environment.
 dependencies = [
+    # Web framework
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
     "jinja2>=3.1",
@@ -16,22 +14,21 @@ dependencies = [
     "email-validator>=2.1",
     "itsdangerous>=2.2",
     "python-multipart>=0.0.9",
-]
-
-[project.optional-dependencies]
-# Deferred integrations — NOT installed in Stage 1. Kept here so the future
-# architecture is documented and installable on demand, without bloating the
-# base image or forcing the credentials/services to exist.
-stage2-database = [
+    # Database (Neon / PostgreSQL)
     "sqlalchemy[asyncio]>=2.0",
     "asyncpg>=0.29",
     "alembic>=1.13",
-    "pgvector<0.4",
-]
-stage2-storage = [
+    # Admin panel
+    "sqladmin>=0.19",
+    "PyJWT>=2.8",
+    "pwdlib[argon2]>=0.2",
+    # Object storage (Cloudflare R2 via S3-compatible API)
     "boto3>=1.34",
     "pillow>=10.3",
 ]
+
+[project.optional-dependencies]
+# Stage 3 (chatbot) — absent from MVP; kept for documentation only.
 stage3-chatbot = [
     "langchain>=0.2",
     "langchain-openai>=0.1",

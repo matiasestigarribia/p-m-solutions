@@ -14,10 +14,9 @@
     {% endfor %}
   </select>
 {% elif f.kind == 'file' %}
-  {# Inactive in Stage 1 — object storage (Cloudflare R2) is a Stage 2 seam. #}
-  <input class="input-el" id="f-{{ f.name }}" name="{{ f.name }}" type="file" disabled
-         aria-describedby="hint-{{ f.name }}">
-  <p class="input-hint" id="hint-{{ f.name }}">Envio de anexos disponível em breve.</p>
+  <input class="input-el {% if err %}input-el--error{% endif %}" id="f-{{ f.name }}"
+         name="{{ f.name }}" type="file"
+         accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.zip">
 {% else %}
   <input class="input-el {% if err %}input-el--error{% endif %}" id="f-{{ f.name }}"
          name="{{ f.name }}"

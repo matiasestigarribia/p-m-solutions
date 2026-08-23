@@ -2,6 +2,7 @@
    or as part of the full page. `errors` maps field name -> message; `values`
    holds previously-submitted values so the user does not lose input. #}
 <form id="contact-form" class="form" method="post" action="/contato"
+      enctype="multipart/form-data"
       hx-post="/contato" hx-target="#contato-panel" hx-swap="innerHTML" novalidate>
   <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   {# Honeypot: real users leave this empty; bots tend to fill every field. #}

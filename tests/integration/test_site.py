@@ -96,7 +96,6 @@ def test_health_ok_without_database(client):
     assert r.status_code == 200
     body = r.json()
     assert body["status"] == "ok"
-    assert body["stage"] == 1
     assert body["integrations"] == {
         "database": False, "object_storage": False, "chatbot": False,
     }
