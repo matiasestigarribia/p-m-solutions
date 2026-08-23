@@ -156,20 +156,33 @@ p { margin: 0 0 1rem; }
 .nav__brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  width: 120px;
   height: 100%;
+  overflow: visible;
+  flex-shrink: 0;
 }
-.brand-mark {
-  display: grid; place-items: center;
-  width: 30px; height: 30px;
-  border-radius: 8px; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--color-accent-400), var(--color-accent));
-  box-shadow: 0 0 20px rgba(14,165,233,0.35);
+/* The source logo is a 1774×887 RGB canvas with black margins. At the
+   deterministic display size below, its visible artwork begins at 27×29px.
+   The crop window starts exactly on the shared rail, so the artwork—not the
+   source canvas—is what aligns with the navigation content. */
+.nav__brand-crop {
+  position: relative;
+  display: block;
+  width: 120px;
+  height: 32px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #000;
 }
-.brand-name {
-  font-weight: 600; letter-spacing: -0.01em; color: #fff; font-size: 15px;
+.nav__brand-logo {
+  position: absolute;
+  display: block;
+  max-width: none;
+  width: 174px;
+  height: 87px;
+  left: -27px;
+  top: -29px;
 }
-.brand-name span { color: rgba(255,255,255,0.5); font-weight: 400; }
 .nav__links { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
 .nav__links a { color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 500; transition: var(--transition-base); }
 .nav__links a:hover { color: #fff; }
