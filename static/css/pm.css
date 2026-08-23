@@ -39,6 +39,15 @@
   --container-max:     1200px;
   --container-gutter:  24px;
 
+  /* Shared square-grid system — one grammar across every route.
+     Ambient is the calm grid felt while scrolling; line is the stronger
+     grid drawn in each page's top band; mask fades it downward. */
+  --grid-size:         56px;
+  --grid-ambient:      rgba(255,255,255,.028);
+  --grid-line:         rgba(255,255,255,.05);
+  --grid-line-quiet:   rgba(255,255,255,.03);
+  --grid-mask:         radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+
   --radius-btn: 12px; --radius-card: 16px; --radius-panel: 12px;
   --radius-input: 10px; --radius-pill: 999px;
 
@@ -60,9 +69,9 @@ body {
   color: var(--color-body);
   background-color: var(--color-bg);
   background-image:
-    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
-  background-size: 56px 56px;
+    linear-gradient(var(--grid-ambient) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-ambient) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
   padding-top: var(--ds-nav-h);
   -webkit-font-smoothing: antialiased;
 }
@@ -99,8 +108,23 @@ p { margin: 0 0 1rem; }
 
 /* Layout ------------------------------------------------------------------ */
 .container { max-width: var(--container-max); margin: 0 auto; padding: 0 var(--container-gutter); }
-.section { padding: var(--section-padding-y) 0; }
+.section { position: relative; padding: var(--section-padding-y) 0; }
 .section--alt { background: var(--bg-section-alt); }
+
+/* Shared page-head grid band — every route opens on the same grammar.
+   Drawn behind content via ::before; container sits above it. */
+.section--head::before,
+.section--head-quiet::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+  -webkit-mask-image: var(--grid-mask); mask-image: var(--grid-mask);
+}
+.section--head-quiet::before { --grid-line: var(--grid-line-quiet); }
+.section--head > .container,
+.section--head-quiet > .container { position: relative; z-index: 1; }
 .section__eyebrow {
   font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em;
   text-transform: uppercase; color: var(--color-accent-300); margin-bottom: 14px;
@@ -124,7 +148,7 @@ p { margin: 0 0 1rem; }
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
 .nav__brand { display: inline-flex; align-items: center; height: 100%; }
-.nav__brand-logo { display: block; width: 142px; height: 48px; object-fit: contain; object-position: center; }
+.nav__brand-logo { display: block; height: 30px; width: auto; object-fit: contain; object-position: left center; }
 .nav__links { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
 .nav__links a { color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 500; transition: var(--transition-base); }
 .nav__links a:hover { color: #fff; }
@@ -150,13 +174,12 @@ p { margin: 0 0 1rem; }
 .hero__grid {
   position: absolute; inset: 0; z-index: 0;
   background-image:
-    linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
-  background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+  -webkit-mask-image: var(--grid-mask); mask-image: var(--grid-mask);
 }
-.hero__inner { position: relative; z-index: 2; max-width: 820px; }
+.hero__inner { position: relative; z-index: 2; max-width: 780px; }
 .hero__badge {
   display: inline-flex; align-items: center; gap: 8px;
   background: var(--glass-panel); border: 1px solid var(--color-border);
