@@ -1,0 +1,26 @@
+{# Renders a single input based on its `kind`. Expects `f` (Field) and `values`. #}
+{% set val = values.get(f.name, '') %}
+{% set err = errors.get(f.name) %}
+{% if f.kind == 'textarea' %}
+  <textarea class="input-el {% if err %}input-el--error{% endif %}" id="f-{{ f.name }}"
+            name="{{ f.name }}" {% if f.required %}required{% endif %}
+            {% if f.example %}placeholder="{{ f.example }}"{% endif %}>{{ val }}</textarea>
+{% elif f.kind == 'select' %}
+  <select class="input-el {% if err %}input-el--error{% endif %}" id="f-{{ f.name }}"
+          name="{{ f.name }}" {% if f.required %}required{% endif %}>
+    <option value="">Selecione…</option>
+    {% for opt in f.options %}
+      <option value="{{ opt }}" {% if val == opt %}selected{% endif %}>{{ opt }}</option>
+    {% endfor %}
+  </select>
+{% elif f.kind == 'file' %}
+  <input class="input-el {% if err %}input-el--error{% endif %}" id="f-{{ f.name }}"
+         name="{{ f.name }}" type="file"
+         accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.zip">
+{% else %}
+  <input class="input-el {% if err %}input-el--error{% endif %}" id="f-{{ f.name }}"
+         name="{{ f.name }}"
+         type="{% if f.kind == 'email' %}email{% elif f.kind == 'tel' %}tel{% else %}text{% endif %}"
+         value="{{ val }}" {% if f.required %}required{% endif %}
+         {% if f.example %}placeholder="{{ f.example }}"{% endif %}>
+{% endif %}

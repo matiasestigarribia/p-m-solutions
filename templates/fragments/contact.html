@@ -1,0 +1,17 @@
+<!-- Contato fragment -->
+<section class="section section--alt" id="contato">
+  <div class="container">
+    <p class="section__eyebrow">Contato</p>
+    <h1>{{ content.CONTATO_INTRO.title }}</h1>
+    <div class="section__lead stack" style="margin-bottom:36px">
+      {% for p in content.CONTATO_INTRO.paragraphs %}<p>{{ p }}</p>{% endfor %}
+    </div>
+    <div id="contato-panel">
+      {% if submitted %}
+        {% include 'partials/contact_success.html' %}
+      {% else %}
+        {% include 'partials/contact_form.html' %}
+      {% endif %}
+    </div>
+  </div>
+</section>

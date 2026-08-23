@@ -1,0 +1,22 @@
+<!-- Produtos fragment -->
+<section class="section" id="produtos">
+  <div class="container">
+    <p class="section__eyebrow">Soluções</p>
+    <h1>{{ content.PRODUCTS_TITLE }}</h1>
+    {% if content.PRODUCTS %}
+      <div class="grid-3">
+        {% for prod in content.PRODUCTS %}
+        <article class="feature-card">
+          <h2 class="feature-card__title">{{ prod.name }}</h2>
+          <p class="feature-card__text">{{ prod.description }}</p>
+        </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="badge badge--neutral">Em breve</span>
+        <p style="margin-top:12px">{{ content.PRODUCTS_PLACEHOLDER }}</p>
+      </div>
+    {% endif %}
+  </div>
+</section>

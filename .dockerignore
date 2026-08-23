@@ -1,0 +1,38 @@
+# Never ship the reusable source checkout or its git history.
+_reference/
+.git
+.gitignore
+
+# Secrets / local config
+.env
+.env.*
+*.pem
+
+# Local data & caches (SQLite contact sink, etc.)
+data/
+*.sqlite3
+*.db
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtualenvs
+.venv/
+venv/
+env/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Tests are not needed in the runtime image
+tests/
+
+# The design-system artifact is a reference, not a runtime asset
+PM-Tech-Solutions-Design-System.html

@@ -1,0 +1,24 @@
+<!-- Quem Somos fragment -->
+<section class="section" id="quem-somos">
+  <div class="container">
+    <p class="section__eyebrow">Sobre a empresa</p>
+    <h1>{{ content.QUEM_SOMOS.title }}</h1>
+    <div class="section__lead stack">
+      {% for p in content.QUEM_SOMOS.paragraphs %}<p>{{ p }}</p>{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt" id="mvp">
+  <div class="container">
+    <div class="grid-3">
+      {% for sec in content.MVP_SECTIONS %}
+      <article class="feature-card">
+        <div class="feature-card__icon" aria-hidden="true">&#9670;</div>
+        <h2 class="feature-card__title">{{ sec.title }}</h2>
+        {% for p in sec.paragraphs %}<p class="feature-card__text">{{ p }}</p>{% endfor %}
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
