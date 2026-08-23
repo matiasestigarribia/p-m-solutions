@@ -92,6 +92,28 @@ def test_production_accepts_real_secret(monkeypatch):
     assert settings.secret_key == "a-real-strong-production-secret-0123456789"
 
 
+def test_production_rejects_shared_r2_bucket_names(monkeypatch):
+    _clear_pm_env(monkeypatch)
+    from app.core.settings import Settings
+
+    with pytest.raises(ValueError, match="must be different"):
+        Settings(
+            _env_file=None,
+            environment="production",
+            secret_key="a-real-strong-production-secret-0123456789",
+            admin_secret_key="a-different-admin-secret-0123456789",
+            enable_database=True,
+            database_url="postgresql+asyncpg://user:pass@host/db",
+            enable_object_storage=True,
+            r2_endpoint_url="https://r2.example",
+            r2_access_key="access",
+            r2_secret_key="secret",
+            r2_bucket_name="same-bucket",
+            r2_private_bucket_name="same-bucket",
+            r2_public_url="https://cdn.example",
+        )
+
+
 def test_production_rejects_missing_integration_config(monkeypatch):
     _clear_pm_env(monkeypatch)
     from app.core.settings import Settings

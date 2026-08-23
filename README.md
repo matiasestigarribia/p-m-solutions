@@ -154,6 +154,7 @@ docker push gcr.io/PROJECT/pm-solutions
 gcloud run deploy pm-solutions \
   --image gcr.io/PROJECT/pm-solutions \
   --region us-central1 \
+  --max-instances=1 \
   --set-env-vars PM_ENVIRONMENT=production \
   --set-secrets PM_SECRET_KEY=pm-secret-key:latest \
   --set-secrets PM_ADMIN_SECRET_KEY=pm-admin-secret-key:latest \
@@ -167,6 +168,10 @@ gcloud run deploy pm-solutions \
   --set-env-vars PM_R2_PUBLIC_URL=https://assets.yourdomain.com \
   --set-env-vars PM_ENABLE_OBJECT_STORAGE=true
 ```
+
+The MVP uses an in-process contact/admin rate limiter. `--max-instances=1`
+is therefore required until a shared limiter backed by a managed store is
+introduced.
 
 After deploy, run migrations:
 ```bash

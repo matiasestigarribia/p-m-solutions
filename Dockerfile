@@ -20,25 +20,10 @@ RUN apt-get update \
         zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml ./
-RUN pip install --upgrade pip \
-    && pip install \
-        "fastapi>=0.115" \
-        "uvicorn[standard]>=0.30" \
-        "jinja2>=3.1" \
-        "pydantic>=2.7" \
-        "pydantic-settings>=2.3" \
-        "email-validator>=2.1" \
-        "itsdangerous>=2.2" \
-        "python-multipart>=0.0.9" \
-        "sqlalchemy[asyncio]>=2.0" \
-        "asyncpg>=0.29" \
-        "alembic>=1.13" \
-        "sqladmin>=0.19" \
-        "PyJWT>=2.8" \
-        "pwdlib[argon2]>=0.2" \
-        "boto3>=1.34" \
-        "pillow>=10.3"
+COPY pyproject.toml uv.lock ./
+RUN pip install --upgrade pip uv \
+    && uv sync --frozen --no-dev --no-install-project
+ENV PATH="/app/.venv/bin:$PATH"
 
 COPY app ./app
 COPY templates ./templates
