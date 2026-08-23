@@ -89,15 +89,6 @@ def test_public_pages_share_one_grid_layer(client, path):
     r = client.get(path)
     assert r.status_code == 200
     assert 'class="site-grid"' in r.text
-    assert 'class="nav__brand-crop"' in r.text
-
-
-def test_shared_grid_is_intentionally_visible():
-    css = Path("static/css/pm.css").read_text(encoding="utf-8")
-    assert "--grid-ambient:      rgba(255,255,255,.18);" in css
-    assert ".section--alt { background: rgba(6,6,6,.5); }" in css
-    assert 'background-size: 174px 87px;' in css
-    assert 'background-position: -27px -29px;' in css
 
 
 def test_contact_form_lists_all_solution_options(client):
@@ -218,3 +209,151 @@ def test_body_grid_not_blocked_on_products_page(client):
     assert r.status_code == 200
     assert 'id="produtos"' in r.text
     assert "section--alt" not in r.text
+
+
+# --- Design-system CSS contract -------------------------------------------
+# These tests assert the actual CSS values, not just class presence.
+# They fail if someone bumps the grid alpha back to .18/.09/.028 or removes
+# the mask, and if the navbar logo workaround (PNG crop offsets) is reintroduced.
+
+_ROOT = Path(__file__).resolve().parents[2]
+_CSS = (_ROOT / "static/css/pm.css").read_text()
+_BASE = (_ROOT / "templates/base.html").read_text()
+
+
+def test_grid_line_alpha_is_design_system_compliant():
+    """Grid line rgba alpha must equal .04 (DS spec). .18 or any value > .04
+    makes the grid noisy and competes with text."""
+    # Match the two grid line declarations: rgba(255,255,255,ALPHA) 1px
+    alphas = re.findall(r"rgba\(255,255,255,([0-9.]+)\)\s+1px", _CSS)
+    assert alphas, "No grid-line rgba declarations found in pm.css"
+    for raw in alphas:
+        alpha = float(raw)
+        assert alpha <= 0.04, (
+            f"Grid line alpha {alpha!r} exceeds design-system max (0.04). "
+            "Revert to rgba(255,255,255,.04)."
+        )
+
+
+def test_grid_uses_design_system_cell_size():
+    """Grid background-size must be 56px 56px per design-system token."""
+    assert "background-size: var(--grid-size) var(--grid-size)" in _CSS or \
+           "background-size: 56px 56px" in _CSS, \
+        "Grid background-size must reference the 56px design-system token."
+
+
+def test_grid_has_radial_mask():
+    """Grid must have the DS radial mask so it fades from the top band.
+    Without the mask, the grid covers the full viewport and competes with body text."""
+    assert "mask-image: radial-gradient" in _CSS, (
+        "site-grid is missing mask-image. Add the DS radial gradient mask."
+    )
+    assert "-webkit-mask-image: radial-gradient" in _CSS, (
+        "site-grid is missing -webkit-mask-image for WebKit browsers."
+    )
+
+
+def test_no_stale_grid_ambient_token():
+    """The old --grid-ambient variable (.028 or .18) must not exist.
+    Grid alpha is now declared inline in .site-grid per DS source."""
+    assert "--grid-ambient" not in _CSS, (
+        "--grid-ambient token must be removed; alpha is declared inline in .site-grid."
+    )
+
+
+def test_navbar_uses_semantic_brand_lockup():
+    """Navbar logo must use the DS semantic brand lockup (brand-mark + brand-name),
+    not the PNG crop workaround. The visible left edge of the brand aligns
+    with the 1200px/24px container rail without any pixel-crop offsets."""
+    assert 'class="brand-mark"' in _BASE, "brand-mark element missing from base.html"
+    assert 'class="brand-name"' in _BASE, "brand-name element missing from base.html"
+    # Ensure there is visible SVG content inside the mark (not an empty span)
+    assert "<svg" in _BASE, "brand-mark must contain an inline SVG mark"
+
+
+def test_no_png_crop_offsets_in_css():
+    """The hard-coded PNG crop workaround (object-position / background-position
+    offsets) must not exist in pm.css."""
+    assert "nav__brand-logo" not in _CSS, (
+        "nav__brand-logo class must be removed — it was part of the PNG crop workaround."
+    )
+    assert "object-fit" not in _CSS, (
+        "object-fit must not appear — PNG cropping workaround has been replaced by "
+        "the semantic brand lockup."
+    )
+    assert "object-position" not in _CSS, (
+        "object-position must not appear — PNG cropping workaround replaced."
+    )
+
+
+@pytest.mark.parametrize("path", ["/", "/quem-somos", "/produtos", "/contato"])
+def test_brand_lockup_rendered_on_all_routes(client, path):
+    """Every public route must render the semantic brand lockup in the navbar."""
+    r = client.get(path)
+    assert r.status_code == 200
+    assert 'class="brand-mark"' in r.text
+    assert 'class="brand-name"' in r.text
+    assert "<svg" in r.text
+
+
+# --- Home-hero depth fields + signal line ---------------------------------
+
+def test_home_hero_signal_line_present(client):
+    """Home hero must render the Portuguese signal line between badge and h1."""
+    r = client.get("/")
+    assert r.status_code == 200
+    assert "PROBLEMA → PROCESSO → SOLUÇÃO" in r.text
+    assert 'class="hero__signal"' in r.text
+
+
+def test_hero_signal_not_on_inner_pages(client):
+    """Signal line is home-only; inner pages must not carry it."""
+    for path in ("/quem-somos", "/produtos", "/contato"):
+        r = client.get(path)
+        assert "hero__signal" not in r.text, f"hero__signal found on {path}"
+
+
+def test_hero_cyan_depth_field_in_css():
+    """hero--home::before must define the cyan radial depth field (DS rgba(14,165,233,0.18))."""
+    assert ".hero--home::before" in _CSS, ".hero--home::before rule missing from pm.css"
+    assert "rgba(14,165,233,0.18)" in _CSS, \
+        "Cyan depth field rgba(14,165,233,0.18) not found in .hero--home::before rule"
+    # Verify pointer-events and z-index appear in the before block
+    before_block = _CSS[_CSS.index(".hero--home::before"):]
+    before_block = before_block[:before_block.index("}")]
+    assert "pointer-events: none" in before_block, \
+        ".hero--home::before must have pointer-events: none"
+    assert "z-index: 1" in before_block, \
+        ".hero--home::before must use z-index: 1 (behind .hero__inner at z-index 2)"
+
+
+def test_hero_indigo_depth_field_in_css():
+    """hero--home::after must define the indigo radial depth field (DS rgba(129,140,248,0.14))."""
+    assert ".hero--home::after" in _CSS, ".hero--home::after rule missing from pm.css"
+    assert "rgba(129,140,248,0.14)" in _CSS, \
+        "Indigo depth field rgba(129,140,248,0.14) not found in .hero--home::after rule"
+    after_block = _CSS[_CSS.index(".hero--home::after"):]
+    after_block = after_block[:after_block.index("}")]
+    assert "pointer-events: none" in after_block, \
+        ".hero--home::after must have pointer-events: none"
+    assert "z-index: 1" in after_block, \
+        ".hero--home::after must use z-index: 1 (behind .hero__inner at z-index 2)"
+
+
+def test_hero_inner_sits_above_depth_fields():
+    """.hero__inner z-index must be higher than the depth field pseudo-elements."""
+    inner_match = re.search(r"\.hero__inner\s*\{[^}]+z-index:\s*(\d+)", _CSS)
+    assert inner_match, ".hero__inner z-index declaration not found in pm.css"
+    assert int(inner_match.group(1)) >= 2, \
+        ".hero__inner z-index must be ≥ 2 to sit above depth fields at z-index 1"
+
+
+def test_grid_alpha_and_mask_unaffected_by_depth_fields():
+    """Depth field additions must not alter grid alpha (≤0.04) or remove the DS mask."""
+    alphas = re.findall(r"rgba\(255,255,255,([0-9.]+)\)\s+1px", _CSS)
+    assert alphas, "No grid-line rgba declarations found — grid may have been removed"
+    for raw in alphas:
+        assert float(raw) <= 0.04, \
+            f"Grid alpha {raw!r} exceeds 0.04 — depth field edit must not touch the grid"
+    assert "mask-image: radial-gradient" in _CSS, \
+        "DS radial mask was removed from site-grid"
