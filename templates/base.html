@@ -22,11 +22,10 @@
 
   <nav class="nav">
     <div class="nav__inner">
-      <a class="nav__brand" href="/" aria-label="P & M Solutions"
+      <a class="nav__brand" href="/" aria-label="P &amp; M Solutions"
          hx-get="/" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
-        <img class="nav__brand-logo"
-             src="{{ url_for('static', path='brand/pm-solutions-logo-dark.png') }}"
-             alt="P & M Solutions">
+        <span class="brand-mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 2h6a3.5 3.5 0 0 1 0 7H6v5H3V2z" fill="rgba(255,255,255,0.9)"/></svg></span>
+        <span class="brand-name">P&amp;M<span> Solutions</span></span>
       </a>
       <button class="nav__toggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav-links" data-nav-toggle>&#9776;</button>
       <ul class="nav__links" id="nav-links">
