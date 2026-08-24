@@ -335,8 +335,10 @@ select.input-el {
   color-scheme: dark;
 }
 select.input-el option {
-  color: #fff;
-  background-color: #0A0A0A;
+  /* Chromium/Linux may keep the native popup surface white even when the
+     control advertises a dark color scheme. Keep popup text readable there. */
+  color: #18181b;
+  background-color: #fff;
 }
 .input-hint { font-size: 12px; color: var(--color-muted); margin: 0; }
 .input-hint--error { color: #fb7185; }

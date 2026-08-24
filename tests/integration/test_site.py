@@ -373,4 +373,10 @@ def test_select_options_have_dark_native_popup_contrast():
     """Dark form controls must keep native select options readable."""
     assert "select.input-el option" in _CSS
     assert "color-scheme: dark" in _CSS
-    assert "background-color: #0A0A0A" in _CSS
+    assert "color: #18181b" in _CSS
+    assert "background-color: #fff" in _CSS
+
+
+def test_stylesheet_version_changes_when_visual_css_changes():
+    """Browser caches must not retain the pre-fix stylesheet indefinitely."""
+    assert "pm.css') }}?v=20260824-ds-global-glow-dropdown-fix" in _BASE
