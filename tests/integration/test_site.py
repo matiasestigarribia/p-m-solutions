@@ -359,3 +359,18 @@ def test_grid_alpha_and_mask_unaffected_by_depth_fields():
             f"Grid alpha {raw!r} exceeds 0.04 — depth field edit must not touch the grid"
     assert "mask-image: radial-gradient" in _CSS, \
         "DS radial mask was removed from site-grid"
+
+
+def test_navbar_stacking_rule_keeps_nav_above_page_content():
+    """The body-child stacking rule must not override the navbar z-index."""
+    assert "body > *:not(.site-grid):not(.site-glow):not(.nav)" in _CSS
+    nav_match = re.search(r"\.nav\s*\{[^}]+z-index:\s*(\d+)", _CSS)
+    assert nav_match, "Navbar z-index declaration not found"
+    assert int(nav_match.group(1)) >= 50
+
+
+def test_select_options_have_dark_native_popup_contrast():
+    """Dark form controls must keep native select options readable."""
+    assert "select.input-el option" in _CSS
+    assert "color-scheme: dark" in _CSS
+    assert "background-color: #0A0A0A" in _CSS
