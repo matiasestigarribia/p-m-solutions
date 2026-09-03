@@ -382,4 +382,12 @@ def test_select_options_have_dark_native_popup_contrast():
 
 def test_stylesheet_version_changes_when_visual_css_changes():
     """Browser caches must not retain the pre-fix stylesheet indefinitely."""
-    assert "pm.css') }}?v=20260903-chatbot-ui" in _BASE
+    assert "pm.css') }}?v=20260903-chatbot-icon" in _BASE
+
+
+def test_chatbot_launcher_has_chat_icon_when_enabled(monkeypatch):
+    monkeypatch.setattr(settings, "enable_chatbot", True, raising=False)
+    r = TestClient(app).get("/")
+    assert r.status_code == 200
+    assert 'id="pm-chat-launcher"' in r.text
+    assert 'class="chat-launcher__icon"' in r.text

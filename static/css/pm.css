@@ -372,6 +372,7 @@ select.input-el option {
   border-radius: var(--radius-pill); box-shadow: var(--glow-md); cursor: pointer;
   font: 500 14px var(--font-body); transition: var(--transition-base);
 }
+.chat-launcher__icon { width: 18px; height: 18px; flex: 0 0 18px; }
 .chat-launcher:hover { background: var(--color-accent-400); transform: translateY(-2px); }
 .chat-launcher__dot { width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%; background: var(--color-success); }
 .chat-modal { position: fixed; inset: 0; z-index: 55; display: grid; place-items: end end; padding: 24px; background: rgba(0,0,0,.46); }
