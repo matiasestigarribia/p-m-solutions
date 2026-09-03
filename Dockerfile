@@ -2,6 +2,7 @@
 # Binds to $PORT, runs as non-root, includes all dependencies for
 # Neon PostgreSQL (asyncpg + pgvector), Cloudflare R2, Pillow, SQLAdmin,
 # and the Groq-generation/local-vector public RAG chatbot.
+# Deployment marker: rebuild the merged P&M chatbot source image.
 FROM python:3.13-slim
 
 ENV PYTHONUNBUFFERED=1 \
