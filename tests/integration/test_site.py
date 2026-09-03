@@ -14,6 +14,9 @@ def _local_sink(tmp_path, monkeypatch):
     # Keep persistence local + isolated; never touch the repo's ./data dir.
     monkeypatch.setattr(settings, "contact_sink", "sqlite", raising=False)
     monkeypatch.setattr(settings, "contact_db_path", str(tmp_path / "contact.sqlite3"), raising=False)
+    monkeypatch.setattr(settings, "enable_database", False, raising=False)
+    monkeypatch.setattr(settings, "enable_object_storage", False, raising=False)
+    monkeypatch.setattr(settings, "enable_chatbot", False, raising=False)
 
 
 @pytest.fixture

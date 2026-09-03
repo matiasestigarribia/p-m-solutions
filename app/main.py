@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.core.settings import settings
-from app.routers import contact, pages
+from app.routers import chat, contact, pages
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +26,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(pages.router, tags=["Pages"])
 app.include_router(contact.router, tags=["Contact"])
+app.include_router(chat.router, prefix="/api/v1/chat", tags=["Chatbot"])
 
 # ---------------------------------------------------------------------------
 # Admin panel — mounted only when DB is enabled
@@ -34,11 +35,14 @@ if settings.enable_database:
     from app.admin.admin import UrlAwareAdmin
     from app.admin.auth import get_authentication_backend
     from app.admin.views import (
+        ChatLogAdmin,
         CompanyAdmin,
         ContactMessageAdmin,
         MissionAdmin,
         ProductAdmin,
         PurposeAdmin,
+        RagDocumentAdmin,
+        UploadedDocumentAdmin,
         UserAdmin,
         VisionAdmin,
     )
@@ -57,6 +61,9 @@ if settings.enable_database:
     _admin.add_view(PurposeAdmin)
     _admin.add_view(ProductAdmin)
     _admin.add_view(ContactMessageAdmin)
+    _admin.add_view(RagDocumentAdmin)
+    _admin.add_view(ChatLogAdmin)
+    _admin.add_view(UploadedDocumentAdmin)
 
 
 # ---------------------------------------------------------------------------

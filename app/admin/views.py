@@ -1,14 +1,19 @@
 """SQLAdmin ModelViews for all P&M entities."""
 from __future__ import annotations
 
+from typing import ClassVar
+
 from sqladmin import ModelView
 from wtforms import FileField
 
+from app.models.chat_logs import ChatLog
 from app.models.company import Company
 from app.models.contact_messages import ContactMessage
 from app.models.mission import Mission
 from app.models.products import Product
 from app.models.purpose import Purpose
+from app.models.rag_documents import RagDocument
+from app.models.uploaded_documents import UploadedDocument
 from app.models.users import User
 from app.models.vision import Vision
 
@@ -169,3 +174,80 @@ class ContactMessageAdmin(ModelView, model=ContactMessage):
         ContactMessage.attachment_key,
     ]
     form_widget_args = {"need": {"rows": 6}}
+
+
+class RagDocumentAdmin(ModelView, model=RagDocument):
+    name = "RAG Chunk"
+    name_plural = "RAG Chunks"
+    icon = "fa-solid fa-database"
+    can_create = False
+    can_edit = False
+    can_delete = True
+    column_list: ClassVar = [RagDocument.id, RagDocument.source, RagDocument.language, RagDocument.active, RagDocument.created_at]
+
+
+class ChatLogAdmin(ModelView, model=ChatLog):
+    name = "Chat Log"
+    name_plural = "Chat Logs"
+    icon = "fa-solid fa-comments"
+    can_create = False
+    can_edit = False
+    can_delete = True
+    column_list: ClassVar = [ChatLog.id, ChatLog.user_message, ChatLog.bot_reply, ChatLog.language, ChatLog.created_at]
+
+
+class UploadedDocumentAdmin(ModelView, model=UploadedDocument):
+    name = "RAG Upload"
+    name_plural = "RAG Uploads"
+    icon = "fa-solid fa-file-arrow-up"
+    can_delete = True
+    form_overrides: ClassVar = {"file_path": FileField}
+    form_create_rules: ClassVar = ["filename", "file_path", "language"]
+    form_edit_rules: ClassVar = ["filename", "language"]
+    column_list: ClassVar = [UploadedDocument.id, UploadedDocument.filename, UploadedDocument.language, UploadedDocument.created_at]
+
+    async def on_model_change(self, data, model, is_created, request):
+        from starlette.datastructures import UploadFile
+
+        upload = data.get("file_path")
+        if not isinstance(upload, UploadFile):
+            return
+        content = await upload.read()
+        if not content:
+            raise ValueError("Choose a PDF, Markdown, or TXT document.")
+        filename = upload.filename or "knowledge.txt"
+        extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+        content_types = {"pdf": "application/pdf", "md": "text/markdown", "txt": "text/plain"}
+        content_type = content_types.get(extension)
+        if not content_type:
+            raise ValueError("Only PDF, Markdown, and TXT documents are supported.")
+
+        from app.core.settings import settings
+        if not settings.enable_object_storage:
+            raise ValueError("Private R2 storage must be enabled before adding knowledge documents.")
+        from app.services.storage_service import MAX_DOC_BYTES, upload_to_r2
+        url, _ = await upload_to_r2(
+            file_bytes=content,
+            folder="ragdocs",
+            filename=filename,
+            content_type=content_type,
+            max_size=MAX_DOC_BYTES,
+            allowed_types=frozenset({content_type}),
+            private=True,
+        )
+        data["filename"] = filename
+        data["file_path"] = url
+
+        from app.core.database import get_session
+        from app.services.ai_service import process_and_embed_document
+
+        async def ingest():
+            async for session in get_session():
+                await process_and_embed_document(
+                    content,
+                    filename,
+                    data.get("language", "pt"),
+                    session,
+                )
+
+        await ingest()

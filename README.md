@@ -1,8 +1,8 @@
 # P & M Solutions — MVP
 
 Public content site with Neon PostgreSQL persistence, Cloudflare R2 media,
-SQLAdmin, and an HTMX/Jinja2 frontend. Chatbot / LLM / vector search are
-intentionally absent from this release.
+SQLAdmin, an HTMX/Jinja2 frontend, and a guarded RAG chatbot using local
+multilingual embeddings with Groq generation.
 
 > **External accounts are not provisioned by this repository.**
 > You must create your own Neon project and Cloudflare R2 bucket.
@@ -160,6 +160,8 @@ gcloud run deploy pm-solutions \
   --set-secrets PM_ADMIN_SECRET_KEY=pm-admin-secret-key:latest \
   --set-secrets PM_DATABASE_URL=pm-database-url:latest \
   --set-env-vars PM_ENABLE_DATABASE=true \
+  --set-secrets PM_GROQ_API_KEY=pm-groq-api-key:latest \
+  --set-env-vars PM_ENABLE_CHATBOT=true \
   --set-secrets PM_R2_ACCESS_KEY=pm-r2-access-key:latest \
   --set-secrets PM_R2_SECRET_KEY=pm-r2-secret-key:latest \
   --set-env-vars PM_R2_ENDPOINT_URL=https://... \
@@ -213,6 +215,14 @@ PM_DATABASE_URL=... .venv/bin/alembic downgrade -1
 | `PM_R2_BUCKET_NAME` | When R2 enabled | Bucket name |
 | `PM_R2_PRIVATE_BUCKET_NAME` | When R2 enabled | Private bucket for contact attachments |
 | `PM_R2_PUBLIC_URL` | When R2 enabled | Public base URL for R2 assets |
+| `PM_ENABLE_CHATBOT` | No | `true` to activate the public chatbot |
+| `PM_GROQ_API_KEY` | When chatbot enabled | Groq API key; store in Secret Manager |
+| `PM_PRIMARY_LLM` | No | Groq chat model; default `qwen/qwen3.6-27b` |
+| `PM_EMBEDDING_MODEL` | No | Local FastEmbed model; default `sentence-transformers/paraphrase-multilingual-mpnet-base-v2` |
+| `PM_EMBEDDING_DIMENSIONS` | No | Local vector size; default `768` |
+| `PM_EMBEDDING_CACHE_DIR` | No | Local model cache; Docker uses `/app/model-cache` |
+
+The current chatbot rollout accepts Portuguese only. English and Spanish remain planned future languages and can be re-enabled after their knowledge-base content and language QA are complete.
 
 ---
 
@@ -229,6 +239,9 @@ PM_DATABASE_URL=... .venv/bin/alembic downgrade -1
 | Purpose | Propósito copy |
 | Products | Product cards (name, description, optional R2 image) |
 | Contact Messages | Submitted contact forms |
+| RAG Uploads | Private PDF/Markdown/TXT knowledge uploads; embedding runs before save |
+| RAG Chunks | Searchable embedded chunks; deactivate a chunk to exclude it |
+| Chat Logs | Every accepted client message is stored first; the generated Groq, fallback, or error reply is attached afterward for operational review |
 
 ---
 
@@ -247,6 +260,7 @@ p-m-solutions/
 ├── migrations/         # Alembic scripts
 │   └── versions/
 ├── static/             # CSS, JS, images
+├── knowledge/          # P&M chatbot knowledge documents for admin indexing
 ├── templates/          # Jinja2 templates (HTMX fragments)
 ├── tests/
 │   ├── integration/

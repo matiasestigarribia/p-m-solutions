@@ -1,0 +1,30 @@
+<button class="chat-launcher" type="button" id="pm-chat-launcher" aria-controls="pm-chat" aria-expanded="false">
+  <span class="chat-launcher__dot" aria-hidden="true"></span>
+  <span>Ask P&amp;M</span>
+</button>
+
+<section class="chat-modal" id="pm-chat" aria-labelledby="pm-chat-title" hidden>
+  <div class="chat-panel" role="dialog" aria-modal="true">
+    <header class="chat-panel__header">
+      <div>
+        <p class="section__eyebrow">P&amp;M Solutions</p>
+        <h2 id="pm-chat-title">How can we help?</h2>
+        <p class="chat-panel__status"><span class="chat-launcher__dot" aria-hidden="true"></span> Knowledge chatbot</p>
+      </div>
+      <button class="chat-panel__close" type="button" id="pm-chat-close" aria-label="Close chatbot">&times;</button>
+    </header>
+    <div class="chat-panel__messages" id="pm-chat-messages" aria-live="polite" aria-label="Chat messages">
+      <div class="chat-message chat-message--bot">Ask about P&amp;M Solutions, our approved solutions, or how to contact us.</div>
+    </div>
+    <form class="chat-panel__form" id="pm-chat-form">
+      <label for="pm-chat-language">Language</label>
+      <select class="input-el" id="pm-chat-language" aria-label="Chat language">
+        <option value="pt" selected>Português</option>
+      </select>
+      <label class="sr-only" for="pm-chat-input">Your question</label>
+      <input class="input-el" id="pm-chat-input" name="message" maxlength="1500" autocomplete="off" placeholder="Write your question..." required>
+      <button class="btn-primary" type="submit" id="pm-chat-send">Send</button>
+    </form>
+    <p class="chat-panel__note">Answers are based on P&amp;M’s approved knowledge base.</p>
+  </div>
+</section>

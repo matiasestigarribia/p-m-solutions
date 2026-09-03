@@ -29,6 +29,7 @@ ALLOWED_DOCUMENT_TYPES = frozenset(
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "text/plain",
+        "text/markdown",
         "text/csv",
         "application/zip",
     }
@@ -39,7 +40,7 @@ MAX_DOC_BYTES = 20 * 1024 * 1024     # 20 MB
 
 def _safe_key(folder: str, filename: str) -> str:
     """Generate a collision-resistant, path-safe object key."""
-    if folder not in {"products", "contact"}:
+    if folder not in {"products", "contact", "ragdocs"}:
         raise ValueError("Unsupported storage folder.")
     filename = os.path.basename(filename.replace("\\", "/"))
     name, ext = os.path.splitext(filename)
@@ -91,7 +92,7 @@ def validate_upload_content(file_bytes: bytes, content_type: str) -> None:
             name.startswith("xl/") for name in names
         ):
             raise ValueError("XLSX content does not match its declared type.")
-    if content_type in {"text/plain", "text/csv"}:
+    if content_type in {"text/plain", "text/markdown", "text/csv"}:
         try:
             file_bytes.decode("utf-8")
         except UnicodeDecodeError as exc:

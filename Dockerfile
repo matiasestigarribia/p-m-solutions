@@ -1,13 +1,14 @@
 # P & M Solutions — MVP image.
 # Binds to $PORT, runs as non-root, includes all dependencies for
-# Neon PostgreSQL (asyncpg), Cloudflare R2 (boto3), Pillow, and SQLAdmin.
-# No chatbot / LLM libraries.
+# Neon PostgreSQL (asyncpg + pgvector), Cloudflare R2, Pillow, SQLAdmin,
+# and the Groq-generation/local-vector public RAG chatbot.
 FROM python:3.13-slim
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    PORT=8080
+    PORT=8080 \
+    PM_EMBEDDING_CACHE_DIR=/app/model-cache
 
 WORKDIR /app
 
@@ -26,10 +27,16 @@ RUN pip install --upgrade pip uv \
 ENV PATH="/app/.venv/bin:$PATH"
 
 COPY app ./app
+COPY scripts ./scripts
 COPY templates ./templates
 COPY static ./static
 COPY migrations ./migrations
 COPY alembic.ini ./
+
+# Bake the local embedding model into the image so the first request does not
+# download it from Hugging Face at runtime.
+RUN mkdir -p /app/model-cache \
+    && python scripts/preload_embedding_model.py
 
 RUN useradd --create-home --uid 10001 appuser \
     && mkdir -p /app/data \

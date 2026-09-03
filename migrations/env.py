@@ -14,12 +14,15 @@ from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 # Import all models so Alembic can discover metadata
-from app.models import Base  # noqa: F401 — ensures all models are registered
+from app.models import Base
+from app.models.chat_logs import ChatLog  # noqa: F401
 from app.models.company import Company  # noqa: F401
 from app.models.contact_messages import ContactMessage  # noqa: F401
 from app.models.mission import Mission  # noqa: F401
 from app.models.products import Product  # noqa: F401
 from app.models.purpose import Purpose  # noqa: F401
+from app.models.rag_documents import RagDocument  # noqa: F401
+from app.models.uploaded_documents import UploadedDocument  # noqa: F401
 from app.models.users import User  # noqa: F401
 from app.models.vision import Vision  # noqa: F401
 
