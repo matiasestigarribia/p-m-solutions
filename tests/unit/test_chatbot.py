@@ -107,6 +107,32 @@ def test_groq_stream_parser_yields_text_chunks(monkeypatch):
     assert chunks == ["Hello", " P&M"]
 
 
+def test_groq_stream_parser_hides_qwen_reasoning(monkeypatch):
+    class ReasoningResponse(FakeStreamResponse):
+        def __init__(self):
+            self.lines = [
+                'data: {"choices":[{"delta":{"content":"<thi"}}]}',
+                'data: {"choices":[{"delta":{"content":"nk>internal reasoning</think>Resposta pública."}}]}',
+                "data: [DONE]",
+            ]
+
+    class ReasoningClient(FakeStreamingClient):
+        def stream(self, *args, **kwargs):
+            return ReasoningResponse()
+
+    monkeypatch.setattr(settings, "enable_chatbot", True)
+    monkeypatch.setattr(settings, "groq_api_key", "test-key")
+    monkeypatch.setattr(ai_service.httpx, "AsyncClient", ReasoningClient)
+
+    async def collect_chunks():
+        return [chunk async for chunk in ai_service.stream_groq_chat("question", "context", [])]
+
+    chunks = asyncio.run(collect_chunks())
+
+    assert "internal reasoning" not in "".join(chunks)
+    assert "Resposta pública." in "".join(chunks)
+
+
 def test_no_context_returns_a_portuguese_reply(monkeypatch):
     async def fake_embedding(_query):
         return [0.1] * 768
