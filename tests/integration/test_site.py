@@ -383,6 +383,7 @@ def test_select_options_have_dark_native_popup_contrast():
 def test_stylesheet_version_changes_when_visual_css_changes():
     """Browser caches must not retain the pre-fix stylesheet indefinitely."""
     assert "pm.css') }}?v=20260903-chatbot-icon" in _BASE
+    assert "main.js') }}?v=20260903-chatbot-icon" in _BASE
 
 
 def test_chatbot_launcher_has_chat_icon_when_enabled(monkeypatch):
