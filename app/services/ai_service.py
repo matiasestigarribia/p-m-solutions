@@ -52,6 +52,61 @@ ERROR_MESSAGES = {
     "pt": "Estou com dificuldades para me conectar. Tente novamente ou use o formulário de contato do site.",
 }
 
+_THINK_OPEN = "<think>"
+_THINK_CLOSE = "</think>"
+
+
+def _suffix_prefix_length(value: str, marker: str) -> int:
+    """Return the length of a suffix that may start a split marker."""
+    for length in range(min(len(value), len(marker) - 1), 0, -1):
+        if value.endswith(marker[:length]):
+            return length
+    return 0
+
+
+class _ReasoningFilter:
+    """Hide Qwen reasoning tags while preserving streamed answer text."""
+
+    def __init__(self) -> None:
+        self._pending = ""
+        self._inside_reasoning = False
+
+    def feed(self, text: str) -> str:
+        self._pending += text
+        output: list[str] = []
+        while self._pending:
+            marker = _THINK_CLOSE if self._inside_reasoning else _THINK_OPEN
+            index = self._pending.find(marker)
+            if index >= 0:
+                if not self._inside_reasoning:
+                    output.append(self._pending[:index])
+                    self._inside_reasoning = True
+                self._pending = self._pending[index + len(marker):]
+                if marker == _THINK_CLOSE:
+                    self._inside_reasoning = False
+                continue
+
+            possible_marker = _suffix_prefix_length(self._pending, marker)
+            if self._inside_reasoning:
+                self._pending = self._pending[-possible_marker:] if possible_marker else ""
+            elif possible_marker:
+                output.append(self._pending[:-possible_marker])
+                self._pending = self._pending[-possible_marker:]
+            else:
+                output.append(self._pending)
+                self._pending = ""
+            break
+        return "".join(output)
+
+    def finish(self) -> str:
+        """Flush ordinary text but never flush an unterminated thought."""
+        if self._inside_reasoning:
+            self._pending = ""
+            return ""
+        output = self._pending
+        self._pending = ""
+        return output
+
 
 class UnsupportedLanguageError(ValueError):
     def __init__(self, language: str):
@@ -197,6 +252,7 @@ def _chat_payload(query: str, context: str, history) -> dict:
 
 async def stream_groq_chat(query: str, context: str, history) -> AsyncGenerator[str, None]:
     api_key, base_url = _require_groq()
+    reasoning_filter = _ReasoningFilter()
     async with httpx.AsyncClient(timeout=settings.chat_timeout_seconds) as client, client.stream(
         "POST",
         f"{base_url}/chat/completions",
@@ -216,7 +272,12 @@ async def stream_groq_chat(query: str, context: str, history) -> AsyncGenerator[
                 continue
             delta = (event.get("choices") or [{}])[0].get("delta", {}).get("content")
             if delta:
-                yield delta
+                visible = reasoning_filter.feed(delta)
+                if visible:
+                    yield visible
+        visible = reasoning_filter.finish()
+        if visible:
+            yield visible
 
 
 async def stream_chat_response(
