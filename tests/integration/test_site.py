@@ -382,4 +382,4 @@ def test_select_options_have_dark_native_popup_contrast():
 
 def test_stylesheet_version_changes_when_visual_css_changes():
     """Browser caches must not retain the pre-fix stylesheet indefinitely."""
-    assert "pm.css') }}?v=20260824-ds-global-glow-dropdown-fix" in _BASE
+    assert "pm.css') }}?v=20260903-chatbot-ui" in _BASE
