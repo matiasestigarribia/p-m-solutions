@@ -107,6 +107,23 @@ def test_groq_stream_parser_yields_text_chunks(monkeypatch):
     assert chunks == ["Hello", " P&M"]
 
 
+def test_no_context_returns_a_portuguese_reply(monkeypatch):
+    async def fake_embedding(_query):
+        return [0.1] * 768
+
+    async def fake_retrieval(*_args):
+        return []
+
+    monkeypatch.setattr(ai_service, "get_embedding", fake_embedding)
+    monkeypatch.setattr(ai_service, "retrieve_documents", fake_retrieval)
+
+    reply = asyncio.run(
+        ai_service.get_chat_response("O que a P&M faz?", "pt", object())
+    )
+
+    assert reply == ai_service.NO_CONTEXT_MESSAGES["pt"]
+
+
 def test_every_received_message_is_stored_then_completed():
     from app.routers import chat
 

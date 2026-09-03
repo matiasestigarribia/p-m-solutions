@@ -87,11 +87,11 @@
           });
           if (result.done) break;
         }
-        if (!reply) replyBubble.textContent = "No response was returned. Please use the contact form.";
+        if (!reply) replyBubble.textContent = "Não foi possível obter uma resposta agora. Tente novamente ou use o formulário de contato.";
         history.push({ role: "user", content: question }, { role: "assistant", content: reply });
       } catch (error) {
         replyBubble.remove();
-        addMessage("The chatbot is temporarily unavailable. Please use the contact form.", "error");
+        addMessage("O chatbot está temporariamente indisponível. Tente novamente ou use o formulário de contato.", "error");
       } finally {
         busy = false;
         send.disabled = false;
