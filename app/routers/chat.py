@@ -129,21 +129,21 @@ async def stream_chatbot(
                 reply_parts.append(chunk)
                 safe = chunk.replace("\n", "\\n")
                 yield f"data: {safe}\n\n"
-        except UnsupportedLanguageError as exc:
+        except UnsupportedLanguageError:
             reply_parts.append(
                 "O idioma solicitado ainda não está disponível no chatbot da P&M Solutions."
             )
-            yield f"data: [ERROR] Unsupported language: {exc.language}\n\n"
+            yield "data: [ERROR] O chatbot atende apenas em português no momento.\n\n"
         except ChatbotNotConfiguredError:
             reply_parts.append(
                 "O chatbot está temporariamente indisponível. Use o formulário de contato do site."
             )
-            yield "data: [ERROR] Chatbot is not configured.\n\n"
+            yield "data: [ERROR] O chatbot está temporariamente indisponível. Use o formulário de contato.\n\n"
         except (RuntimeError, ValueError):
             reply_parts.append(
                 "O chatbot está temporariamente indisponível. Use o formulário de contato do site."
             )
-            yield "data: [ERROR] The chatbot is temporarily unavailable.\n\n"
+            yield "data: [ERROR] O chatbot está temporariamente indisponível. Use o formulário de contato.\n\n"
         finally:
             await _store_bot_reply(db, chat_log, "".join(reply_parts).strip())
             yield "data: [DONE]\n\n"
