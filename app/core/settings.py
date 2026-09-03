@@ -53,8 +53,16 @@ class Settings(BaseSettings):
     r2_private_bucket_name: Optional[str] = None
     r2_public_url: Optional[str] = None
 
-    # --- Chatbot (never active in MVP) -------------------------------------
+    # --- Public RAG chatbot -------------------------------------------------
     enable_chatbot: bool = False
+    groq_api_key: Optional[str] = None
+    groq_base_url: str = "https://api.groq.com/openai/v1"
+    primary_llm: str = "qwen/qwen3.6-27b"
+    embedding_model: str = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+    embedding_dimensions: int = 768
+    embedding_cache_dir: str = "./data/embedding-cache"
+    retrieval_k: int = 5
+    chat_timeout_seconds: float = 45.0
 
     # --- Dev contact sink (used only when enable_database=False) -----------
     contact_sink: Literal["logging", "sqlite"] = "sqlite"
@@ -105,6 +113,14 @@ class Settings(BaseSettings):
                 "PM_R2_SECRET_KEY, PM_R2_BUCKET_NAME, "
                 "PM_R2_PRIVATE_BUCKET_NAME, PM_R2_PUBLIC_URL) are "
                 "required when PM_ENABLE_OBJECT_STORAGE=true."
+            )
+        if self.enable_chatbot and not (self.groq_api_key or "").strip():
+            raise ValueError(
+                "PM_GROQ_API_KEY is required when PM_ENABLE_CHATBOT=true."
+            )
+        if self.enable_chatbot and self.embedding_dimensions != 768:
+            raise ValueError(
+                "P&M chatbot currently requires 768-dimensional local embeddings."
             )
         if (
             self.enable_object_storage

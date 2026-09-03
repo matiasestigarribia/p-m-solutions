@@ -4,6 +4,8 @@ Guards the boundary promised in the Kanban spec: future Neon/R2/chatbot code is
 isolated behind explicit seams that are NOT imported or required at Stage 1
 startup.
 """
+import os
+import subprocess
 import sys
 
 import pytest
@@ -33,9 +35,24 @@ def test_importing_app_does_not_load_deferred_heavy_deps():
     # asyncpg (DB driver), boto3 (R2), and langchain (chatbot) must not be
     # loaded at startup — they are gated behind their enable_* flags.
     # sqlalchemy is a required MVP dep and may be present in sys.modules.
-    import app.main  # noqa: F401
-
-    for heavy in ("asyncpg", "boto3", "langchain", "pgvector"):
-        assert heavy not in sys.modules, (
-            f"{heavy} must not be imported when its integration flag is disabled"
-        )
+    code = """
+import sys
+import app.main
+for heavy in ("asyncpg", "boto3", "langchain", "pgvector"):
+    assert heavy not in sys.modules, f"{heavy} was imported at startup"
+"""
+    env = os.environ.copy()
+    env.update({
+        "PM_ENVIRONMENT": "development",
+        "PM_ENABLE_DATABASE": "false",
+        "PM_ENABLE_OBJECT_STORAGE": "false",
+        "PM_ENABLE_CHATBOT": "false",
+    })
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr

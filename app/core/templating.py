@@ -25,6 +25,8 @@ def base_context(request: Request, **extra) -> dict:
         "errors": {},
         "submitted": False,
         "active_fragment": "fragments/home.html",
+        "chatbot_enabled": settings.enable_chatbot,
+        "chat_language": "pt",
     }
     ctx.update(extra)
     return ctx

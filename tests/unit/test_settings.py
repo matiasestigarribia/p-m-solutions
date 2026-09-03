@@ -16,9 +16,10 @@ def test_settings_construct_without_any_secret_env(monkeypatch):
 
     assert settings.project_name  # has a P&M default
     assert settings.contact_sink in {"logging", "sqlite"}
-    # LLM/chatbot keys must not appear — MVP has no AI integration.
-    banned = {"openai_api_key", "groq_api_key", "primary_llm", "backup_llm"}
-    assert banned.isdisjoint(set(settings.model_dump().keys()))
+    # Chatbot configuration is present but remains opt-in and secretless by default.
+    assert settings.enable_chatbot is False
+    assert settings.groq_api_key is None
+    assert "openai_api_key" not in settings.model_dump()
     # MVP fields default to None/False when unset.
     assert settings.database_url is None
     assert settings.r2_bucket_name is None
