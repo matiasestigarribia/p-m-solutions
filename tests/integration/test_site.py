@@ -382,8 +382,20 @@ def test_select_options_have_dark_native_popup_contrast():
 
 def test_stylesheet_version_changes_when_visual_css_changes():
     """Browser caches must not retain the pre-fix stylesheet indefinitely."""
-    assert "pm.css') }}?v=20260903-chatbot-pt" in _BASE
-    assert "main.js') }}?v=20260903-chatbot-pt" in _BASE
+    assert "pm.css') }}?v=20260903-chatbot-htmx-v2" in _BASE
+    assert "main.js') }}?v=20260903-chatbot-htmx-v2" in _BASE
+
+
+def test_chatbot_fragment_matches_reference_htmx_contract(client):
+    r = client.get("/chat?lang=pt", headers={"hx-request": "true"})
+    assert r.status_code == 200
+    assert 'id="pm-chat-modal-inner"' in r.text
+    assert 'class="chat-window"' in r.text
+    assert 'id="pm-chat-send"' in r.text
+    assert 'id="pm-chat-language"' not in r.text
+    assert "P&amp;M Solutions" in r.text
+    assert "Digite sua pergunta..." in r.text
+    assert "MatIAs AI" not in r.text
 
 
 def test_chatbot_launcher_has_chat_icon_when_enabled(monkeypatch):
@@ -391,9 +403,8 @@ def test_chatbot_launcher_has_chat_icon_when_enabled(monkeypatch):
     r = TestClient(app).get("/")
     assert r.status_code == 200
     assert 'id="pm-chat-launcher"' in r.text
-    assert 'class="chat-launcher__icon"' in r.text
-    assert "Como podemos ajudar?" in r.text
-    assert "Digite sua pergunta..." in r.text
-    assert "Assistente virtual da P&amp;M" in r.text
-    assert "How can we help?" not in r.text
-    assert "Write your question..." not in r.text
+    assert 'class="chat-launcher__avatar"' in r.text
+    assert 'id="pm-chat-modal"' in r.text
+    assert "Converse com a P&amp;M" in r.text
+    assert "🤖" in r.text
+    assert "MatIAs AI" not in r.text

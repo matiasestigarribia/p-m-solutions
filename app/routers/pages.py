@@ -191,3 +191,10 @@ async def products(request: Request, db=Depends(get_optional_db)):
 async def contact(request: Request, db=Depends(get_optional_db)):
     content_ns = await _build_content(db)
     return _render_page(request, "fragments/contact.html", content_ns, csrf=True)
+
+
+@router.get("/chat", response_class=HTMLResponse)
+async def chat_modal(request: Request, lang: str = "pt"):
+    """Return the Portuguese chat modal fragment for HTMX."""
+    context = base_context(request, chat_language="pt", requested_chat_language=lang)
+    return templates.TemplateResponse(request, "fragments/chat_modal.html", context)

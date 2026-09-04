@@ -1,0 +1,48 @@
+<div id="pm-chat-modal-inner"
+     class="chat-modal__inner"
+     data-i18n-just-now="Agora mesmo"
+     data-i18n-error="⚠️ Estou com dificuldades para conectar agora. Tente novamente em instantes.">
+  <div class="chat-window" role="dialog" aria-modal="true" aria-labelledby="pm-chat-title">
+    <header class="chat-window__header">
+      <div class="chat-window__identity">
+        <div class="chat-window__avatar" aria-hidden="true">🤖</div>
+        <div>
+          <p class="chat-window__eyebrow">P&amp;M SOLUTIONS</p>
+          <h2 id="pm-chat-title">Assistente virtual da P&amp;M</h2>
+          <p class="chat-window__status"><span aria-hidden="true"></span> Sempre online</p>
+        </div>
+      </div>
+      <button class="chat-window__close" type="button" onclick="closeChat()" aria-label="Fechar conversa">&times;</button>
+    </header>
+
+    <div id="pm-chat-messages" class="chat-window__messages" aria-live="polite" aria-label="Mensagens da conversa">
+      <div class="chat-message-row chat-message-row--bot">
+        <div class="chat-message-group">
+          <div class="chat-message chat-message--bot">
+            <p>👋 Olá! Sou o assistente virtual da <strong>P&amp;M Solutions</strong>, movido por IA.</p>
+            <p>Posso ajudar a entender seu desafio e indicar uma possível direção entre as soluções aprovadas da P&amp;M. O que você gostaria de saber?</p>
+          </div>
+          <p class="chat-message__time">Agora mesmo</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-window__quick">
+      <p>Perguntas rápidas:</p>
+      <div class="chat-window__quick-list">
+        <button type="button" onclick="sendQuickMessage('Quais soluções a P&amp;M Solutions oferece?')">Soluções da P&amp;M?</button>
+        <button type="button" onclick="sendQuickMessage('Como a P&amp;M pode ajudar minha empresa?')">Como vocês podem ajudar?</button>
+        <button type="button" onclick="sendQuickMessage('Como entro em contato com a P&amp;M Solutions?')">Como entrar em contato?</button>
+      </div>
+    </div>
+
+    <form id="pm-chat-form" class="chat-window__form" action="javascript:void(0);" onsubmit="return false;">
+      <label class="sr-only" for="pm-chat-input">Sua pergunta</label>
+      <div class="chat-window__input-row">
+        <input type="text" id="pm-chat-input" name="message" maxlength="1500" autocomplete="off" required placeholder="Digite sua pergunta...">
+        <button type="submit" id="pm-chat-send" aria-label="Enviar pergunta">➤</button>
+      </div>
+      <p class="chat-window__note">As respostas são baseadas na base de conhecimento aprovada da P&amp;M.</p>
+    </form>
+  </div>
+</div>
