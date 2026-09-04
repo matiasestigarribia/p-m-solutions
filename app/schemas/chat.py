@@ -15,7 +15,7 @@ class ChatHistoryMessage(BaseModel):
 
 class ChatRequestSchema(BaseModel):
     message: str = Field(min_length=2, max_length=1500)
-    language: str = Field(default="pt", min_length=2, max_length=10)
+    language: str = Field(default="auto", min_length=2, max_length=10)
     chat_history: list[ChatHistoryMessage] = Field(default_factory=list, max_length=8)
 
     @field_validator("message", "language")

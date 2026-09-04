@@ -71,11 +71,16 @@ def test_default_chat_model_is_current_rag_sized_model():
     assert configured.embedding_dimensions == 768
 
 
-def test_portuguese_is_the_only_active_chat_language():
-    assert ai_service.validate_language("pt") == "pt"
-    for language in ("en", "es"):
-        with pytest.raises(ai_service.UnsupportedLanguageError):
-            ai_service.validate_language(language)
+def test_chat_language_is_detected_without_a_selector():
+    assert ai_service.detect_language("Quais soluções a empresa oferece?") == "pt"
+    assert ai_service.detect_language("¿Qué soluciones ofrece la empresa?") == "es"
+    assert ai_service.detect_language("What solutions does the company offer?") == "en"
+    assert ai_service.resolve_language("auto", "What do you do?") == "en"
+
+
+def test_supported_chat_languages_are_resolved_automatically():
+    for language in ("en", "es", "pt"):
+        assert ai_service.validate_language(language) == language
 
 
 def test_local_embeddings_use_clean_text(monkeypatch):
@@ -148,6 +153,19 @@ def test_no_context_returns_a_portuguese_reply(monkeypatch):
     )
 
     assert reply == ai_service.NO_CONTEXT_MESSAGES["pt"]
+
+
+def test_unexpected_stream_failure_returns_visible_localized_reply(monkeypatch):
+    async def failing_embedding(_query):
+        raise RuntimeError("database retrieval failed")
+
+    monkeypatch.setattr(ai_service, "get_embedding", failing_embedding)
+
+    reply = asyncio.run(
+        ai_service.get_chat_response("O que a P&M faz?", "pt", object())
+    )
+
+    assert reply == ai_service.ERROR_MESSAGES["pt"]
 
 
 def test_every_received_message_is_stored_then_completed():

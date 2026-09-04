@@ -1,42 +1,9 @@
-<button class="chat-launcher" type="button" id="pm-chat-launcher" aria-controls="pm-chat" aria-expanded="false">
-  <svg class="chat-launcher__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-    <path d="M5 5.5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H12l-4.5 3v-3H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-    <path d="M8 11.5h.01M12 11.5h.01M16 11.5h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-  </svg>
-  <span class="chat-launcher__dot" aria-hidden="true"></span>
-  <span>Converse com a P&amp;M</span>
+<button class="chat-launcher" type="button" id="pm-chat-launcher"
+        aria-label="Abrir assistente virtual da P&amp;M"
+        aria-controls="pm-chat-modal" aria-expanded="false"
+        onclick="openChat()">
+  <span class="chat-launcher__avatar" aria-hidden="true">🤖</span>
+  <span class="chat-launcher__label">Converse com a P&amp;M</span>
 </button>
 
-<section class="chat-modal" id="pm-chat" aria-labelledby="pm-chat-title" hidden>
-  <div class="chat-panel" role="dialog" aria-modal="true">
-    <header class="chat-panel__header">
-      <div class="chat-panel__identity">
-        <div class="chat-panel__avatar" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
-            <path d="M5 5.5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H12l-4.5 3v-3H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-            <path d="M8 11.5h.01M12 11.5h.01M16 11.5h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div>
-        <p class="section__eyebrow">P&amp;M Solutions</p>
-        <h2 id="pm-chat-title">Como podemos ajudar?</h2>
-        <p class="chat-panel__status"><span class="chat-launcher__dot" aria-hidden="true"></span> Assistente virtual da P&amp;M</p>
-        </div>
-      </div>
-      <button class="chat-panel__close" type="button" id="pm-chat-close" aria-label="Fechar chatbot">&times;</button>
-    </header>
-    <div class="chat-panel__messages" id="pm-chat-messages" aria-live="polite" aria-label="Chat messages">
-      <div class="chat-message chat-message--bot">Olá! Sou o assistente virtual da P&amp;M Solutions. Posso ajudar a entender seu desafio e indicar uma possível direção entre as soluções aprovadas da P&amp;M. Como posso ajudar?</div>
-    </div>
-    <form class="chat-panel__form" id="pm-chat-form">
-      <label for="pm-chat-language">Idioma</label>
-      <select class="input-el" id="pm-chat-language" aria-label="Chat language">
-        <option value="pt" selected>Português</option>
-      </select>
-      <label class="sr-only" for="pm-chat-input">Sua pergunta</label>
-      <input class="input-el" id="pm-chat-input" name="message" maxlength="1500" autocomplete="off" placeholder="Digite sua pergunta..." required>
-      <button class="btn-primary" type="submit" id="pm-chat-send">Enviar</button>
-    </form>
-    <p class="chat-panel__note">As respostas são baseadas na base de conhecimento aprovada da P&amp;M.</p>
-  </div>
-</section>
+<div id="pm-chat-modal" class="chat-modal" hidden aria-live="polite"></div>

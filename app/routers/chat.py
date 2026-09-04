@@ -13,6 +13,7 @@ from app.schemas.chat import ChatRequestSchema
 from app.services.ai_service import (
     ChatbotNotConfiguredError,
     UnsupportedLanguageError,
+    detect_language,
     get_chat_response,
     stream_chat_response,
 )
@@ -27,7 +28,7 @@ async def _store_incoming_message(db: AsyncSession, payload: ChatRequestSchema):
     chat_log = ChatLog(
         user_message=payload.message,
         bot_reply="",
-        language=payload.language.lower().strip(),
+        language=detect_language(payload.message) if payload.language.lower() == "auto" else payload.language.lower().strip(),
     )
     try:
         db.add(chat_log)

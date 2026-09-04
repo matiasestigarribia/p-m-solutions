@@ -18,10 +18,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.prompts import PM_CHAT_SYSTEM_PROMPT
 from app.core.settings import settings
 
-# Portuguese is active now; English and Spanish remain defined for the
-# planned multilingual expansion.
+# The reference chat resolves the response language from the visitor's message.
 SUPPORTED_LANGUAGES = frozenset({"en", "es", "pt"})
-ACTIVE_LANGUAGES = frozenset({"pt"})
+ACTIVE_LANGUAGES = SUPPORTED_LANGUAGES
+AUTO_LANGUAGE = "auto"
 SUPPORTED_EXTENSIONS = frozenset({".pdf", ".md", ".txt"})
 MAX_DOCUMENT_BYTES = 20 * 1024 * 1024
 CHUNK_SIZE = 1200
@@ -116,6 +116,28 @@ class UnsupportedLanguageError(ValueError):
 
 class ChatbotNotConfiguredError(RuntimeError):
     """Raised when the chatbot is enabled without a Groq key."""
+
+
+def detect_language(text: str) -> str:
+    """Detect the visitor's language without requiring a UI selector."""
+    lowered = text.lower()
+    scores = {"pt": 0, "es": 0, "en": 0}
+    markers = {
+        "pt": (" você ", " não ", " como ", " soluções", " empresa", " contato", " podem ", " para ", "ção", "ões", "á", "ã", "õ"),
+        "es": (" qué ", " cómo ", " empresa", " soluciones", " contacto", " pueden ", " para ", "ción", "ñ", "¿", "¡"),
+        "en": (" the ", " what ", " how ", " company", " solutions", " contact", " can ", " do ", " are ", " is "),
+    }
+    padded = f" {lowered} "
+    for language, language_markers in markers.items():
+        scores[language] = sum(padded.count(marker) for marker in language_markers)
+    return max(scores, key=lambda item: scores[item]) if max(scores.values()) else "pt"
+
+
+def resolve_language(language: str, query: str) -> str:
+    normalized = language.lower().strip()
+    if normalized == AUTO_LANGUAGE:
+        return detect_language(query)
+    return validate_language(normalized)
 
 
 def validate_language(language: str) -> str:
@@ -235,10 +257,21 @@ def _history_messages(history) -> list[dict[str, str]]:
     ]
 
 
-def _chat_payload(query: str, context: str, history) -> dict:
+def _language_instruction(language: str) -> str:
+    return {
+        "pt": "Brazilian Portuguese",
+        "es": "Spanish",
+        "en": "English",
+    }[language]
+
+
+def _chat_payload(query: str, context: str, history, language: str = "pt") -> dict:
     messages = [{
         "role": "system",
-        "content": PM_CHAT_SYSTEM_PROMPT.format(context=context),
+        "content": PM_CHAT_SYSTEM_PROMPT.format(
+            context=context,
+            response_language=_language_instruction(language),
+        ),
     }]
     messages.extend(_history_messages(history))
     messages.append({"role": "user", "content": query})
@@ -250,14 +283,16 @@ def _chat_payload(query: str, context: str, history) -> dict:
     }
 
 
-async def stream_groq_chat(query: str, context: str, history) -> AsyncGenerator[str, None]:
+async def stream_groq_chat(
+    query: str, context: str, history, language: str = "pt"
+) -> AsyncGenerator[str, None]:
     api_key, base_url = _require_groq()
     reasoning_filter = _ReasoningFilter()
     async with httpx.AsyncClient(timeout=settings.chat_timeout_seconds) as client, client.stream(
         "POST",
         f"{base_url}/chat/completions",
         headers=_headers(api_key),
-        json=_chat_payload(query, context, history),
+        json=_chat_payload(query, context, history, language),
     ) as response:
         response.raise_for_status()
         async for line in response.aiter_lines():
@@ -286,7 +321,7 @@ async def stream_chat_response(
     db: AsyncSession,
     chat_history=None,
 ) -> AsyncGenerator[str, None]:
-    selected_language = validate_language(language)
+    selected_language = resolve_language(language, query)
     if is_greeting(query) and not chat_history:
         yield GREETING_MESSAGES[selected_language]
         return
@@ -296,17 +331,19 @@ async def stream_chat_response(
 
     try:
         query_vector = await get_embedding(query)
-        docs = await retrieve_documents(db, query_vector, selected_language)
+        # The approved source is Portuguese; the model translates supported facts
+        # when the visitor writes in English or Spanish.
+        docs = await retrieve_documents(db, query_vector, "pt")
         if not docs:
             yield NO_CONTEXT_MESSAGES[selected_language]
             return
         reply_parts: list[str] = []
-        async for chunk in stream_groq_chat(query, _context(docs), chat_history):
+        async for chunk in stream_groq_chat(query, _context(docs), chat_history, selected_language):
             reply_parts.append(chunk)
             yield chunk
     except UnsupportedLanguageError:
         raise
-    except (httpx.HTTPError, RuntimeError, ValueError, OSError) as exc:
+    except Exception as exc:  # noqa: BLE001
         print(f"P&M chatbot error: {type(exc).__name__}: {exc}")
         yield ERROR_MESSAGES[selected_language]
 
