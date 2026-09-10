@@ -58,7 +58,7 @@ class Settings(BaseSettings):
     groq_api_key: Optional[str] = None
     groq_base_url: str = "https://api.groq.com/openai/v1"
     primary_llm: str = "qwen/qwen3.6-27b"
-    embedding_model: str = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+    embedding_model: str = "local-hashed-ngrams-v1"
     embedding_dimensions: int = 768
     embedding_cache_dir: str = "./data/embedding-cache"
     retrieval_k: int = 5
@@ -76,6 +76,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _validate(self) -> "Settings":
+        # Older Cloud Run revisions may still provide PM_EMBEDDING_MODEL for
+        # MPNet. Normalize it so that stale configuration cannot resurrect the
+        # memory-heavy neural embedding path.
+        self.embedding_model = "local-hashed-ngrams-v1"
         if self.environment == "production" and (
             len(self.secret_key.strip()) < MIN_PRODUCTION_SECRET_LENGTH
             or self.secret_key == DEV_INSECURE_SECRET_KEY

@@ -34,11 +34,8 @@ COPY static ./static
 COPY migrations ./migrations
 COPY alembic.ini ./
 
-# Bake the local embedding model into the image so the first request does not
-# download it from Hugging Face at runtime.
-RUN mkdir -p /app/model-cache \
-    && python scripts/preload_embedding_model.py
-
+# Embeddings use the dependency-free local hashed representation at runtime;
+# no neural model is downloaded or initialized in the container.
 RUN useradd --create-home --uid 10001 appuser \
     && mkdir -p /app/data \
     && chown -R appuser:appuser /app

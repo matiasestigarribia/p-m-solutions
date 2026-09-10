@@ -67,8 +67,17 @@ def test_prompt_is_p_and_m_secretary_with_injection_boundary():
 def test_default_chat_model_is_current_rag_sized_model():
     configured = Settings(_env_file=None)
     assert configured.primary_llm == "qwen/qwen3.6-27b"
-    assert configured.embedding_model == "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+    assert configured.embedding_model == "local-hashed-ngrams-v1"
     assert configured.embedding_dimensions == 768
+
+
+def test_stale_neural_embedding_setting_is_normalized():
+    configured = Settings(
+        _env_file=None,
+        embedding_model="sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+    )
+
+    assert configured.embedding_model == "local-hashed-ngrams-v1"
 
 
 def test_chat_language_is_detected_without_a_selector():
@@ -86,7 +95,7 @@ def test_supported_chat_languages_are_resolved_automatically():
 def test_local_embeddings_use_clean_text(monkeypatch):
     captured = []
 
-    def fake_embed(values, prefix):
+    def fake_embed(values, prefix=""):
         captured.append((values, prefix))
         return [[0.1] * 768 for _ in values]
 
@@ -97,6 +106,69 @@ def test_local_embeddings_use_clean_text(monkeypatch):
     assert passage_vectors == [[0.1] * 768]
     assert query_vector == [0.1] * 768
     assert captured == [(["company facts"], ""), (["company facts"], "")]
+
+
+def test_local_embeddings_are_deterministic_768_dimensional_and_lightweight():
+    vectors = asyncio.run(ai_service.get_embeddings([
+        "Automação de processos para empresas",
+        "Automação de processos para empresas",
+    ]))
+
+    assert len(vectors) == 2
+    assert len(vectors[0]) == 768
+    assert vectors[0] == vectors[1]
+    assert sum(value * value for value in vectors[0]) == pytest.approx(1.0)
+
+
+def test_groq_payload_hides_qwen_reasoning():
+    payload = ai_service._chat_payload("question", "context", [], "pt")
+
+    assert payload["model"] == "qwen/qwen3.6-27b"
+    assert payload["reasoning_format"] == "hidden"
+
+
+def test_groq_empty_stream_is_rejected(monkeypatch):
+    class EmptyStreamResponse(FakeStreamResponse):
+        def __init__(self):
+            self.lines = ["data: [DONE]"]
+
+    class EmptyStreamingClient(FakeStreamingClient):
+        def stream(self, *args, **kwargs):
+            return EmptyStreamResponse()
+
+    monkeypatch.setattr(settings, "enable_chatbot", True)
+    monkeypatch.setattr(settings, "groq_api_key", "test-key")
+    monkeypatch.setattr(ai_service.httpx, "AsyncClient", EmptyStreamingClient)
+
+    async def collect_chunks():
+        return [chunk async for chunk in ai_service.stream_groq_chat("question", "context", [])]
+
+    with pytest.raises(RuntimeError, match="no visible answer"):
+        asyncio.run(collect_chunks())
+
+
+def test_empty_groq_stream_returns_visible_localized_error(monkeypatch):
+    async def fake_retrieval(*_args):
+        return [type("Doc", (), {"source": "test.md", "content": "approved context"})()]
+
+    class EmptyStreamResponse(FakeStreamResponse):
+        def __init__(self):
+            self.lines = ["data: [DONE]"]
+
+    class EmptyStreamingClient(FakeStreamingClient):
+        def stream(self, *args, **kwargs):
+            return EmptyStreamResponse()
+
+    monkeypatch.setattr(settings, "enable_chatbot", True)
+    monkeypatch.setattr(settings, "groq_api_key", "test-key")
+    monkeypatch.setattr(ai_service, "retrieve_documents", fake_retrieval)
+    monkeypatch.setattr(ai_service.httpx, "AsyncClient", EmptyStreamingClient)
+
+    reply = asyncio.run(
+        ai_service.get_chat_response("question", "pt", object())
+    )
+
+    assert reply == ai_service.ERROR_MESSAGES["pt"]
 
 
 def test_groq_stream_parser_yields_text_chunks(monkeypatch):
