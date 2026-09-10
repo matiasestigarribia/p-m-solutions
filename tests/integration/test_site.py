@@ -109,7 +109,7 @@ def test_contact_phone_field_has_brazilian_mask_attributes(client):
     assert 'autocomplete="tel"' in r.text
     assert 'maxlength="15"' in r.text
     assert 'data-phone-mask="br"' in r.text
-    assert "main.js?v=20260910-contact-phone-v1" in r.text
+    assert "main.js?v=20260910-chat-stream-spacing-v2" in r.text
 
 
 # --- Health ---------------------------------------------------------------
@@ -394,7 +394,7 @@ def test_select_options_have_dark_native_popup_contrast():
 def test_stylesheet_version_changes_when_visual_css_changes():
     """Browser caches must not retain the pre-fix stylesheet indefinitely."""
     assert "pm.css') }}?v=20260910-chat-readable-v1" in _BASE
-    assert "main.js') }}?v=20260910-contact-phone-v1" in _BASE
+    assert "main.js') }}?v=20260910-chat-stream-spacing-v2" in _BASE
 
 
 def test_chatbot_fragment_matches_reference_htmx_contract(client):
