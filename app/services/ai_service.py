@@ -280,6 +280,7 @@ def _chat_payload(query: str, context: str, history, language: str = "pt") -> di
         "messages": messages,
         "temperature": 0.2,
         "stream": True,
+        "reasoning_format": "hidden",
     }
 
 
@@ -288,6 +289,7 @@ async def stream_groq_chat(
 ) -> AsyncGenerator[str, None]:
     api_key, base_url = _require_groq()
     reasoning_filter = _ReasoningFilter()
+    emitted_visible_text = False
     async with httpx.AsyncClient(timeout=settings.chat_timeout_seconds) as client, client.stream(
         "POST",
         f"{base_url}/chat/completions",
@@ -309,10 +311,14 @@ async def stream_groq_chat(
             if delta:
                 visible = reasoning_filter.feed(delta)
                 if visible:
+                    emitted_visible_text = True
                     yield visible
         visible = reasoning_filter.finish()
         if visible:
+            emitted_visible_text = True
             yield visible
+        if not emitted_visible_text:
+            raise RuntimeError("Groq returned no visible answer.")
 
 
 async def stream_chat_response(

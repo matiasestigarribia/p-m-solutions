@@ -1,3 +1,70 @@
+// Brazilian telephone mask: (DD) XXXX-XXXX or (DD) 9XXXX-XXXX.
+(function () {
+  "use strict";
+
+  function formatBrazilPhone(value) {
+    var digits = String(value || "").replace(/\D/g, "").slice(0, 11);
+    if (!digits) return "";
+    if (digits.length <= 2) return "(" + digits;
+
+    var ddd = digits.slice(0, 2);
+    var local = digits.slice(2);
+    var mobile = local.charAt(0) === "9";
+    var localLength = mobile ? 9 : 8;
+    var splitAt = mobile ? 5 : 4;
+    local = local.slice(0, localLength);
+
+    var formatted = "(" + ddd + ") " + local.slice(0, splitAt);
+    if (local.length > splitAt) formatted += "-" + local.slice(splitAt);
+    return formatted;
+  }
+
+  function cursorAfterDigits(formatted, digitCount) {
+    if (!digitCount) return 0;
+    var seen = 0;
+    for (var index = 0; index < formatted.length; index += 1) {
+      if (/\d/.test(formatted.charAt(index))) seen += 1;
+      if (seen >= digitCount) return index + 1;
+    }
+    return formatted.length;
+  }
+
+  function formatInput(input) {
+    var selection = input.selectionStart == null ? input.value.length : input.selectionStart;
+    var digitsBeforeCursor = input.value.slice(0, selection).replace(/\D/g, "").length;
+    var formatted = formatBrazilPhone(input.value);
+    input.value = formatted;
+    if (document.activeElement === input && input.setSelectionRange) {
+      var cursor = cursorAfterDigits(formatted, Math.min(digitsBeforeCursor, 11));
+      input.setSelectionRange(cursor, cursor);
+    }
+  }
+
+  function bindPhoneMasks(root) {
+    var scope = root || document;
+    if (!scope.querySelectorAll) return;
+    Array.prototype.forEach.call(
+      scope.querySelectorAll('input[data-phone-mask="br"]'),
+      function (input) {
+        if (input.dataset.phoneMaskBound === "true") return;
+        input.dataset.phoneMaskBound = "true";
+        input.addEventListener("input", function () { formatInput(input); });
+        formatInput(input);
+      }
+    );
+  }
+
+  window.PMPhoneMask = { format: formatBrazilPhone };
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () { bindPhoneMasks(document); });
+  } else {
+    bindPhoneMasks(document);
+  }
+  document.addEventListener("htmx:afterSwap", function (event) {
+    bindPhoneMasks(event.detail && event.detail.target);
+  });
+})();
+
 // Progressive enhancement for the P&M Solutions site.
 (function () {
   "use strict";

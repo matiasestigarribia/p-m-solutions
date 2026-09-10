@@ -101,6 +101,16 @@ def test_contact_form_lists_all_solution_options(client):
         assert opt in r.text
 
 
+def test_contact_phone_field_has_brazilian_mask_attributes(client):
+    r = client.get("/contato")
+
+    assert 'id="f-phone"' in r.text
+    assert 'inputmode="numeric"' in r.text
+    assert 'autocomplete="tel"' in r.text
+    assert 'maxlength="15"' in r.text
+    assert 'data-phone-mask="br"' in r.text
+
+
 # --- Health ---------------------------------------------------------------
 def test_health_ok_without_database(client):
     r = client.get("/health")

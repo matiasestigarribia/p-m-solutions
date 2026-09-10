@@ -6,6 +6,7 @@ cannot be tampered into carrying arbitrary values.
 """
 from __future__ import annotations
 
+import re
 from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
@@ -17,6 +18,29 @@ def _blank_to_none(v):
     if isinstance(v, str) and v.strip() == "":
         return None
     return v
+
+
+def _normalize_brazilian_phone(value):
+    """Normalize Brazilian landline/mobile numbers to their display format."""
+    if not isinstance(value, str):
+        return value
+    digits = re.sub(r"\D", "", value)
+    if len(digits) not in {10, 11}:
+        raise ValueError(
+            "Informe um telefone brasileiro com DDD, com 10 dígitos (fixo) "
+            "ou 11 dígitos (celular)."
+        )
+    if len(digits) == 10 and digits[2] == "9":
+        raise ValueError(
+            "O telefone brasileiro celular precisa do nono dígito 9."
+        )
+    if len(digits) == 11 and digits[2] != "9":
+        raise ValueError("O telefone celular deve conter o nono dígito 9.")
+    ddd = digits[:2]
+    local = digits[2:]
+    if len(local) == 9:
+        return f"({ddd}) {local[:5]}-{local[5:]}"
+    return f"({ddd}) {local[:4]}-{local[4:]}"
 
 
 class ContactSubmission(BaseModel):
@@ -34,10 +58,15 @@ class ContactSubmission(BaseModel):
     best_time: Optional[str] = None
     consent: bool
 
-    @field_validator("full_name", "phone", "need", mode="before")
+    @field_validator("full_name", "need", mode="before")
     @classmethod
     def _strip_required(cls, v):
         return v.strip() if isinstance(v, str) else v
+
+    @field_validator("phone", mode="before")
+    @classmethod
+    def _phone_brazilian_format(cls, v):
+        return _normalize_brazilian_phone(v)
 
     @field_validator("project_stage", "priority", "contact_preference", "best_time", mode="before")
     @classmethod
