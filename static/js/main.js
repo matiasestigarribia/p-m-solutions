@@ -275,7 +275,8 @@
       var processFrame = function (frame) {
         var line = frame.split("\n").find(function (part) { return part.indexOf("data:") === 0; });
         if (!line) return;
-        var data = line.slice(5).trim();
+        var data = line.slice(5);
+        if (data.charAt(0) === " ") data = data.slice(1);
         if (data === "[DONE]") return;
         if (data.indexOf("[ERROR]") === 0) {
           hadError = true;
