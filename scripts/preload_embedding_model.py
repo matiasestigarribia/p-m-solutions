@@ -1,22 +1,7 @@
-"""Preload the local multilingual embedding model into a container cache."""
-from __future__ import annotations
+"""Legacy compatibility entry point.
 
-import os
+P&M uses a dependency-free deterministic 768-dimensional representation, so
+there is no neural embedding model to preload into the container image.
+"""
 
-from fastembed import TextEmbedding
-from fastembed.common.model_description import ModelSource, PoolingType
-
-MODEL = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
-FASTEMBED_MODEL = "pm/paraphrase-multilingual-mpnet-base-v2"
-DIMENSIONS = 768
-
-TextEmbedding.add_custom_model(
-    model=FASTEMBED_MODEL,
-    pooling=PoolingType.MEAN,
-    normalization=True,
-    sources=ModelSource(hf=MODEL),
-    dim=DIMENSIONS,
-    model_file="onnx/model.onnx",
-)
-TextEmbedding(model_name=FASTEMBED_MODEL, cache_dir=os.environ.get("PM_EMBEDDING_CACHE_DIR", "/app/model-cache"))
-print(f"Preloaded {MODEL} ({DIMENSIONS} dimensions)")
+print("No neural embedding preload required; using local hashed embeddings.")

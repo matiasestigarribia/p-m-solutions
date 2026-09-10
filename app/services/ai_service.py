@@ -1,16 +1,15 @@
 """Local-vector/Groq-generation RAG service for P&M Solutions."""
 from __future__ import annotations
 
-import asyncio
+import hashlib
 import io
 import json
+import math
 import os
+import re
 from collections.abc import AsyncGenerator, Iterable
-from functools import lru_cache
 
 import httpx
-from fastembed import TextEmbedding
-from fastembed.common.model_description import ModelSource, PoolingType
 from pypdf import PdfReader
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,8 +26,7 @@ MAX_DOCUMENT_BYTES = 20 * 1024 * 1024
 CHUNK_SIZE = 1200
 CHUNK_OVERLAP = 150
 EMBEDDING_BATCH_SIZE = 64
-LOCAL_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
-LOCAL_FASTEMBED_MODEL = "pm/paraphrase-multilingual-mpnet-base-v2"
+LOCAL_EMBEDDING_MODEL = "local-hashed-ngrams-v1"
 LOCAL_EMBEDDING_DIMENSIONS = 768
 
 GREETING_MESSAGES = {
@@ -179,56 +177,50 @@ def _headers(api_key: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
 
-@lru_cache(maxsize=1)
-def _embedding_model() -> TextEmbedding:
-    if settings.embedding_model != LOCAL_EMBEDDING_MODEL:
-        raise RuntimeError(
-            f"Unsupported local embedding model: {settings.embedding_model}."
-        )
-    if settings.embedding_dimensions != LOCAL_EMBEDDING_DIMENSIONS:
-        raise RuntimeError(
-            "Local multilingual MPNet embeddings require 768 dimensions."
-        )
-    try:
-        TextEmbedding.add_custom_model(
-            model=LOCAL_FASTEMBED_MODEL,
-            pooling=PoolingType.MEAN,
-            normalization=True,
-            sources=ModelSource(hf=LOCAL_EMBEDDING_MODEL),
-            dim=LOCAL_EMBEDDING_DIMENSIONS,
-            model_file="onnx/model.onnx",
-        )
-    except ValueError as exc:
-        if "already registered" not in str(exc):
-            raise
-    return TextEmbedding(
-        model_name=LOCAL_FASTEMBED_MODEL,
-        cache_dir=settings.embedding_cache_dir,
-    )
+def _hashed_features(text: str) -> list[str]:
+    normalized = re.sub(r"[^\wÀ-ÿ]+", " ", text.lower(), flags=re.UNICODE).strip()
+    words = normalized.split()
+    features = words + [f"{left}_{right}" for left, right in zip(words, words[1:])]
+    for word in words:
+        features.extend(word[index:index + 3] for index in range(max(0, len(word) - 2)))
+    return features
 
 
-def _embed_sync(values: list[str], prefix: str) -> list[list[float]]:
-    vectors = list(_embedding_model().embed([f"{prefix}{text}" for text in values]))
-    result = [vector.tolist() if hasattr(vector, "tolist") else list(vector) for vector in vectors]
-    if len(result) != len(values):
-        raise RuntimeError("Local embedding model returned an unexpected number of embeddings.")
-    if any(len(vector) != settings.embedding_dimensions for vector in result):
-        raise RuntimeError("Local embedding dimensions do not match the configured vector column.")
+def _embed_sync(values: list[str], prefix: str = "") -> list[list[float]]:
+    """Build deterministic unit vectors without loading a neural model.
+
+    The 768-slot contract is retained for pgvector compatibility. Stable hashing
+    keeps document and query representations identical across processes.
+    """
+    result: list[list[float]] = []
+    for value in values:
+        vector = [0.0] * settings.embedding_dimensions
+        for feature in _hashed_features(f"{prefix}{value}"):
+            digest = hashlib.blake2b(feature.encode("utf-8"), digest_size=8).digest()
+            bucket = int.from_bytes(digest, "big") % settings.embedding_dimensions
+            vector[bucket] += 1.0
+        norm = math.sqrt(sum(component * component for component in vector))
+        if norm:
+            vector = [component / norm for component in vector]
+        result.append(vector)
     return result
+
+
+def get_embeddings_sync(values: list[str]) -> list[list[float]]:
+    return _embed_sync(values)
 
 
 async def get_embeddings(texts: Iterable[str]) -> list[list[float]]:
     values = [text.strip() for text in texts if text.strip()]
     if not values:
         return []
-    return await asyncio.to_thread(_embed_sync, values, "")
+    return get_embeddings_sync(values)
 
 
 async def get_embedding(text: str) -> list[float]:
     if not text.strip():
         return []
-    vectors = await asyncio.to_thread(_embed_sync, [text.strip()], "")
-    return vectors[0]
+    return get_embeddings_sync([text.strip()])[0]
 
 
 async def retrieve_documents(db: AsyncSession, query_vector: list[float], language: str):

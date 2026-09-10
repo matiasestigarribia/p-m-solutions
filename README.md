@@ -218,11 +218,24 @@ PM_DATABASE_URL=... .venv/bin/alembic downgrade -1
 | `PM_ENABLE_CHATBOT` | No | `true` to activate the public chatbot |
 | `PM_GROQ_API_KEY` | When chatbot enabled | Groq API key; store in Secret Manager |
 | `PM_PRIMARY_LLM` | No | Groq chat model; default `qwen/qwen3.6-27b` |
-| `PM_EMBEDDING_MODEL` | No | Local FastEmbed model; default `sentence-transformers/paraphrase-multilingual-mpnet-base-v2` |
+| `PM_EMBEDDING_MODEL` | No | Dependency-free local hashed embedding representation; default `local-hashed-ngrams-v1` |
 | `PM_EMBEDDING_DIMENSIONS` | No | Local vector size; default `768` |
-| `PM_EMBEDDING_CACHE_DIR` | No | Local model cache; Docker uses `/app/model-cache` |
+| `PM_EMBEDDING_CACHE_DIR` | No | Legacy compatibility setting; no neural model is downloaded or loaded |
 
-The current chatbot rollout accepts Portuguese only. English and Spanish remain planned future languages and can be re-enabled after their knowledge-base content and language QA are complete.
+The chatbot detects Portuguese, Spanish, or English from each visitor message. The approved P&M knowledge base is Portuguese and supported facts are translated naturally when needed.
+
+### Embedding representation change gate
+
+The current runtime uses `local-hashed-ngrams-v1`, a deterministic, dependency-free 768-dimensional representation. It replaces the previous MPNet/ONNX runtime because that model exceeded the free Cloud Run 512 MiB limit. The PostgreSQL column remains `vector(768)`, but vectors from different representations are not interchangeable.
+
+When changing `PM_EMBEDDING_MODEL` or the local representation:
+
+1. Deploy the code only after the matching knowledge source is ready.
+2. Re-embed every active knowledge document with `scripts/reindex_knowledge.py` (or the admin ingestion path) before enabling traffic to the new revision.
+3. Verify the active source count, row count, and `vector_dims(embedding)=768` in Neon.
+4. Run a real retrieval query and a chat smoke test before declaring the revision active.
+
+The current production state has been re-embedded with `local-hashed-ngrams-v1`: 16 active chunks from `p-m-solutions-general-knowledge.pt-BR.md`, all 768-dimensional. Never mix legacy MPNet vectors with hashed-query vectors.
 
 ---
 
