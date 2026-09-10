@@ -22,5 +22,6 @@
          name="{{ f.name }}"
          type="{% if f.kind == 'email' %}email{% elif f.kind == 'tel' %}tel{% else %}text{% endif %}"
          value="{{ val }}" {% if f.required %}required{% endif %}
+         {% if f.name == 'phone' %}inputmode="numeric" autocomplete="tel" maxlength="15" data-phone-mask="br"{% endif %}
          {% if f.example %}placeholder="{{ f.example }}"{% endif %}>
 {% endif %}
