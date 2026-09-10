@@ -273,6 +273,8 @@ def _chat_payload(query: str, context: str, history, language: str = "pt") -> di
         "temperature": 0.2,
         "stream": True,
         "reasoning_format": "hidden",
+        "reasoning_effort": "none",
+        "max_completion_tokens": 800,
     }
 
 
