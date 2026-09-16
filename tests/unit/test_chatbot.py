@@ -66,9 +66,18 @@ def test_prompt_is_p_and_m_secretary_with_injection_boundary():
 
 def test_default_chat_model_is_current_rag_sized_model():
     configured = Settings(_env_file=None)
-    assert configured.primary_llm == "qwen/qwen3.6-27b"
+    assert configured.primary_llm == "qwen/qwen3.8-27b"
     assert configured.embedding_model == "local-hashed-ngrams-v1"
     assert configured.embedding_dimensions == 768
+
+
+def test_retired_groq_model_setting_is_normalized():
+    configured = Settings(
+        _env_file=None,
+        primary_llm="qwen/qwen3.6-27b",
+    )
+
+    assert configured.primary_llm == "qwen/qwen3.8-27b"
 
 
 def test_stale_neural_embedding_setting_is_normalized():
@@ -123,7 +132,7 @@ def test_local_embeddings_are_deterministic_768_dimensional_and_lightweight():
 def test_groq_payload_hides_qwen_reasoning():
     payload = ai_service._chat_payload("question", "context", [], "pt")
 
-    assert payload["model"] == "qwen/qwen3.6-27b"
+    assert payload["model"] == "qwen/qwen3.8-27b"
     assert payload["reasoning_format"] == "hidden"
 
 

@@ -217,7 +217,7 @@ PM_DATABASE_URL=... .venv/bin/alembic downgrade -1
 | `PM_R2_PUBLIC_URL` | When R2 enabled | Public base URL for R2 assets |
 | `PM_ENABLE_CHATBOT` | No | `true` to activate the public chatbot |
 | `PM_GROQ_API_KEY` | When chatbot enabled | Groq API key; store in Secret Manager |
-| `PM_PRIMARY_LLM` | No | Groq chat model; default `qwen/qwen3.6-27b` |
+| `PM_PRIMARY_LLM` | No | Groq chat model; default `qwen/qwen3.8-27b` (retired `qwen/qwen3.6-27b` is normalized) |
 | `PM_EMBEDDING_MODEL` | No | Dependency-free local hashed embedding representation; default `local-hashed-ngrams-v1` |
 | `PM_EMBEDDING_DIMENSIONS` | No | Local vector size; default `768` |
 | `PM_EMBEDDING_CACHE_DIR` | No | Legacy compatibility setting; no neural model is downloaded or loaded |
