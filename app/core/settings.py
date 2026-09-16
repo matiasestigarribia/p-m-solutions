@@ -15,6 +15,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEV_INSECURE_SECRET_KEY = "dev-insecure-change-me"
 MIN_PRODUCTION_SECRET_LENGTH = 32
+RETIRED_GROQ_MODELS = {
+    "qwen/qwen3.6-27b": "qwen/qwen3.8-27b",
+}
 
 
 class Settings(BaseSettings):
@@ -57,7 +60,7 @@ class Settings(BaseSettings):
     enable_chatbot: bool = False
     groq_api_key: Optional[str] = None
     groq_base_url: str = "https://api.groq.com/openai/v1"
-    primary_llm: str = "qwen/qwen3.6-27b"
+    primary_llm: str = "qwen/qwen3.8-27b"
     embedding_model: str = "local-hashed-ngrams-v1"
     embedding_dimensions: int = 768
     embedding_cache_dir: str = "./data/embedding-cache"
@@ -76,6 +79,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _validate(self) -> "Settings":
+        # Cloud Run may retain the previous model as an explicit environment
+        # variable. Normalize it so a retired Groq model cannot be selected
+        # over the current default after a deployment.
+        self.primary_llm = RETIRED_GROQ_MODELS.get(self.primary_llm, self.primary_llm)
         # Older Cloud Run revisions may still provide PM_EMBEDDING_MODEL for
         # MPNet. Normalize it so that stale configuration cannot resurrect the
         # memory-heavy neural embedding path.
